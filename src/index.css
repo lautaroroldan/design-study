@@ -1,0 +1,222 @@
+@import 'tailwindcss';
+
+/*
+  Newsreader (OFL) para títulos y números grandes. Se sirve desde el repo:
+  la app no depende de Google Fonts en runtime.
+*/
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 400 650;
+  font-display: swap;
+  src: url('/fonts/newsreader-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+/*
+  Design tokens — "catálogo de patrones sobre papel".
+  Luz: papel cálido + tinta azul + subrayador mostaza.
+  Oscuro: misma jerarquía invertida, un solo tono (azul) y nada de sombras.
+*/
+:root {
+  color-scheme: light dark;
+
+  --canvas: #f6f4ee;
+  --surface: #fffdf8;
+  --inset: #efebe2;
+  --inset-strong: #e7e2d7;
+
+  --ink: #1a1c21;
+  --ink-2: #4b505b;
+  --ink-3: #7b808b;
+
+  --rule: rgb(26 28 33 / 0.13);
+  --rule-strong: rgb(26 28 33 / 0.22);
+
+  --accent: #1e3f6f;
+  --accent-hover: #152f55;
+  --accent-soft: #e4ebf5;
+
+  --mustard: #a9761a;
+  --mustard-soft: #f6ecce;
+
+  --good: #2b6b4d;
+  --good-soft: #e3efe7;
+  --bad: #a13a34;
+  --bad-soft: #f7e4e1;
+
+  --code-bg: #f2efe6;
+  --code-grid: rgb(26 28 33 / 0.045);
+  --code-ink: #24272e;
+  --code-comment: #85847b;
+  --code-keyword: #1e3f6f;
+  --code-string: #2f6b4f;
+  --code-number: #a9761a;
+  --code-type: #8a4a2f;
+  --code-fn: #24437c;
+  --code-punct: #5c6068;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #131418;
+    --surface: #1a1c21;
+    --inset: #101115;
+    --inset-strong: #23252b;
+
+    --ink: #e9e6df;
+    --ink-2: #b4b1aa;
+    --ink-3: #83807a;
+
+    --rule: rgb(233 230 223 / 0.12);
+    --rule-strong: rgb(233 230 223 / 0.2);
+
+    --accent: #9cb9e6;
+    --accent-hover: #b9cdee;
+    --accent-soft: #1e2b3d;
+
+    --mustard: #dcb163;
+    --mustard-soft: #322813;
+
+    --good: #86c3a2;
+    --good-soft: #17281f;
+    --bad: #e2908a;
+    --bad-soft: #2b1a19;
+
+    --code-bg: #101115;
+    --code-grid: rgb(233 230 223 / 0.05);
+    --code-ink: #ded9d0;
+    --code-comment: #7f7d75;
+    --code-keyword: #9cb9e6;
+    --code-string: #8fc9a8;
+    --code-number: #ddb163;
+    --code-type: #d99d84;
+    --code-fn: #a9c2ee;
+    --code-punct: #a8a5a0;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-inset: var(--inset);
+  --color-inset-strong: var(--inset-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-mustard: var(--mustard);
+  --color-mustard-soft: var(--mustard-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-code: var(--code-bg);
+
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-serif: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SFMono-Regular', 'JetBrains Mono', Consolas, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--rule);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--mustard-soft);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.015em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .code-grid {
+    background-image:
+      linear-gradient(to right, var(--code-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--code-grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule-strong) transparent;
+  }
+
+  .code-grid::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .code-grid::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .code-grid::-webkit-scrollbar-thumb {
+    background-color: var(--rule-strong);
+    border-radius: 3px;
+  }
+
+  /* Línea relevante que se revela después de responder. */
+  .code-block .hl {
+    display: block;
+    width: 100%;
+    background-color: var(--mustard-soft);
+    box-shadow: inset 3px 0 0 var(--mustard);
+  }
+
+  .fade-up {
+    animation: fade-up 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up {
+      animation: none;
+    }
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
