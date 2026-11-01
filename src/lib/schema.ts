@@ -32,7 +32,7 @@ export const questionSchema = z
     difficulty: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     prompt: z.string().min(1),
     code: codeSchema.optional(),
-    options: z.array(optionSchema).length(4),
+    options: z.array(optionSchema).length(4, 'debe tener exactamente 4 opciones'),
     correctOptionId: z.string().min(1),
     explanation: z.string().min(1),
     optionExplanations: z.record(z.string(), z.string()).optional(),
