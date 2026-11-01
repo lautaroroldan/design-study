@@ -1,23 +1,32 @@
-# Decisiones — Fase 1
+# Decisiones
 
-Donde la spec no definía algo, se eligió la opción más simple. Todo lo que quedó
-afuera está al final, separado por fase.
+Donde la spec no definía algo, se eligió la opción más simple. Al final está lo
+que sigue pendiente, separado por fase.
 
-## Alcance
+## Estado
 
-- **Solo Fase 1.** Home, tres secciones separadas (`/gof`, `/solid`, `/grasp`),
-  sesión completa (pregunta → feedback → resultados) y 30 preguntas.
-- `/mixto` y `/progreso` existen como **pantallas marcador de posición** con el
-  detalle de qué va a vivir ahí. No tienen lógica ni datos falsos.
-- No se avanzó nada de Fase 2 ni Fase 3 (ver "Pendiente").
+- **Fase 1** implementada: home, tres secciones, sesión completa, 30 preguntas
+  (10 por tema), tipos `concept` y `find-violation`, código Java.
+- **Fase 2** implementada: modo mixto con filtros, tipos `identify-pattern` y
+  `choose-fix`, código en React y selector de lenguaje por pregunta. Total: 47
+  preguntas (19 GoF, 14 SOLID, 14 GRASP).
+- `/progreso` sigue como pantalla marcador de posición (Fase 3).
+
+## Corrección de la Fase 1
+
+- **La etiqueta (`tag`) se muestra recién después de responder.** En la versión
+  anterior el encabezado de la ficha decía, por ejemplo, `SOLID · ISP · Encontrar
+  la violación` mientras la pregunta era "¿Qué principio SOLID se viola?": **la
+  etiqueta era la respuesta**. Ahora antes de responder se ve tema + tipo de
+  ejercicio, y la etiqueta aparece con el feedback. Hay un test que lo cubre.
 
 ## Stack
 
 | Decisión | Por qué |
 | --- | --- |
 | Vite 6 + React 18 + TS, Tailwind **v4** | La spec pedía React 18; Tailwind v4 se integra por plugin de Vite (sin `tailwind.config.js`: los tokens viven en `src/index.css`). |
-| **Zustand** para la sesión en curso | Menos ceremonia que Context + `useReducer` y los tests de lógica pura no dependen del store. |
-| **`react-syntax-highlighter` (PrismLight)** en vez de Shiki | La spec permitía cualquiera. PrismLight es síncrono: no obliga a cargar un WASM ni a manejar promesas en cada render de código. Se registran solo `java` y `tsx`. |
+| **Zustand** para la sesión en curso | Menos ceremonia que Context + `useReducer`; la lógica de armado y puntaje queda en funciones puras. |
+| **`react-syntax-highlighter` (PrismLight)** | Síncrono, sin WASM; se registran solo `java` y `tsx`. |
 | **React Router 6 con `createBrowserRouter`** | `ScrollRestoration` y rutas anidadas bajo `Layout` sin código extra. |
 | **Zod 3** | Validación en runtime con mensajes por campo; los tipos se declaran aparte en `src/types.ts`. |
 | **Vitest 3 + Testing Library** | Mismo pipeline de Vite; `jsdom` para los tests de componente. |
@@ -25,103 +34,120 @@ afuera está al final, separado por fase.
 ## Contenido
 
 - **Archivos `.ts` en vez de `.json`.** La spec permitía JSON o TS. Con TS los
-  snippets Java se escriben con template literals sin escapar `\n`, y
-  `satisfies Question[]` da chequeo de tipos en el editor además de la validación
-  con Zod en runtime.
-- **30 preguntas: 10 por tema.** La tabla de la sección 9 pide 2 por etiqueta GoF
-  (36 en total) y 4 por principio SOLID (20), pero la Fase 1 de la sección 12 pide
-  explícitamente "10 preguntas de ejemplo por tema". Se priorizó la Fase 1; la
-  cobertura completa por etiqueta queda para la Fase 4 ("más preguntas por
-  etiqueta").
+  snippets se escriben con template literals sin escapar `\n`, y
+  `satisfies Question[]` da chequeo de tipos en el editor además de Zod en
+  runtime.
+- **47 preguntas, no la tabla completa de la sección 9.** La tabla pide 2 por
+  etiqueta GoF y 4 por principio SOLID; la sección 12 pide 10 por tema en Fase 1
+  y no fija volumen para la Fase 2. Se amplió a 19 / 14 / 14 cubriendo los tipos
+  nuevos y ambos lenguajes; la cobertura completa por etiqueta es Fase 4.
 - **`find-violation` en GoF** se interpretó como *"qué patrón, mal aplicado, causa
-  el defecto"* (por ejemplo un Singleton con estado mutable global). La spec
-  describe `find-violation` para SOLID/GRASP; para GoF no había una lectura
-  natural, y esta permite ejercitar el tipo sin inventar un tipo nuevo.
-- **Todas las preguntas tienen `optionExplanations`** para los tres distractores.
-  Es un criterio de calidad de la sección 9 y un test lo verifica.
-- **`hint` es opcional** y existe en el modelo (sección 7) aunque todavía no se
-  muestra: es parte de la Fase 3.
-- **Sin preguntas React.** Todo el código de la Fase 1 es Java; las preguntas
-  conceptuales no dependen del lenguaje.
+  el defecto"* (por ejemplo un Singleton con estado mutable global), porque la
+  spec describe el tipo para SOLID/GRASP.
+- **Todas las preguntas explican cada distractor.** Hay un test que lo verifica.
+- **Criterio de dificultad:** 1 = reconocer el concepto; 2 = leer un snippet
+  corto; 3 = snippet con matices o distractores muy cercanos (Proxy vs Decorator,
+  Mediator vs Facade, Protected Variations vs Polymorphism).
+
+## Variantes Java / React
+
+- **`code` sigue siendo el snippet primario del modelo del README y
+  `codeVariants` guarda las variantes por lenguaje.** Así no se duplican
+  preguntas ni se rompe el modelo documentado. Se valida que la clave coincida
+  con `snippet.language`, que no repita el lenguaje de `code` y que
+  `highlightLines` exista en cada variante.
+- **No todas las preguntas tienen las dos variantes.** La spec lo permite: si un
+  patrón no tiene una expresión natural en React, la pregunta queda en Java.
+  Hoy hay 14 preguntas con las dos variantes.
+- **El selector vive en el encabezado del bloque de código** y muestra solo los
+  lenguajes que la pregunta tiene. El lenguaje inicial es el filtro de la sesión
+  (si elegiste React, abre en React) y después la primaria.
+- **El filtro de lenguaje de la sesión mira todas las variantes**, no solo
+  `code`. Las preguntas conceptuales pasan siempre: no dependen del lenguaje.
+
+## Modo mixto
+
+- **Temas con checkboxes y etiquetas multi-select agrupadas por tema.** Al sacar
+  un tema se podan sus etiquetas para no dejar filtros imposibles.
+- **Sin etiquetas elegidas entra todo** el contenido de los temas seleccionados;
+  es el caso por defecto y el más simple.
+- **«Solo las que fallé» queda para la Fase 3.** La sección 3.2 lo menciona, pero
+  la sección 12 lo asigna explícitamente a la Fase 3 porque necesita el progreso
+  persistido. En `/mixto` se muestra con esa aclaración, sin botón falso.
+- **`Practicar otra sesión` en resultados vuelve a `/mixto`** cuando la sesión
+  tuvo más de un tema.
 
 ## Modelo y lógica de sesión
 
-- **`questionIds` agregado a `SessionConfig`.** Es la forma más simple de
-  implementar "Repetir los errores" de la pantalla de resultados (sección 7) sin
-  duplicar el armado de sesiones.
-- **El filtro de lenguaje solo aplica a preguntas con código.** Una pregunta
-  conceptual no está atada a Java ni a React; si se filtra "Java", siguen
-  apareciendo. Si se filtra "React" en Fase 1, quedan solo las conceptuales.
-- **Las opciones se mezclan al armar la sesión**, no en cada render. Así el orden
-  es estable mientras se responde y se puede testear con un `rng` inyectable
-  (`mulberry32`), sin `Math.random` escondido en la lógica.
-- **"Cantidad" recorta el pool ya ordenado.** Si hay menos preguntas que las
-  pedidas, la sesión se arma con lo disponible y el panel lo muestra antes de
-  empezar ("N preguntas en esta sesión").
-- **Sin preguntas disponibles** el botón "Empezar" queda deshabilitado con el
-  motivo, en vez de navegar a una sesión vacía.
+- **`questionIds` en `SessionConfig`** para "Repetir los errores" sin duplicar el
+  armado de sesiones.
+- **Las opciones se mezclan al armar la sesión**, no en cada render: el orden es
+  estable mientras respondés y testeable con un `rng` inyectable (mulberry32).
+- **"Cantidad" recorta el pool ya ordenado**; si hay menos, se usa lo disponible y
+  el panel lo dice antes de empezar.
 - **La sesión vive en memoria.** Recargar en `/sesion` muestra un estado vacío
-  explicando que la sesión se perdió. Persistirla no estaba en la Fase 1.
+  explicando que se perdió. Persistirla no es parte de las Fases 1–2.
 - **Tipos de ejercicio por sección:** el selector lista solo los tipos que existen
-  en el contenido de ese tema (más "Todos"). Evita combinaciones que dan 0
-  preguntas por elección del usuario.
+  en ese tema (más "Todos"). Evita combinaciones con 0 preguntas elegidas por el
+  usuario.
 
 ## Interfaz
 
-- **Modo claro/oscuro automático** con `prefers-color-scheme` desde ya: es gratis
-  con Tailwind y evita rehacer los colores en la Fase 3. No hay toggle manual.
-- **Paleta con tokens semánticos** (`canvas`, `surface`, `ink`, `rule`, `accent`,
-  `good`, `bad`, `mustard`) definidos como variables CSS y expuestos a Tailwind
-  con `@theme inline`. Ningún color hardcodeado en los componentes.
-- **Tipografía:** Newsreader (variable, OFL) self-hosted en `public/fonts` para
-  títulos y números; system-ui para UI; monoespaciada del sistema para código. Sin
-  dependencia de Google Fonts en runtime.
-- **Acierto/error no dependen solo del color:** cada opción lleva ícono y texto
-  ("Correcta", "Tu respuesta"), y el resultado tiene leyenda + cifras.
-- **Etiquetas mostradas según el contenido**, no la lista completa del README: en
-  Fase 1 hay 9 etiquetas GoF, 5 SOLID y 9 GRASP. Mostrar 18 etiquetas con "0
-  preguntas" habría sido ruido.
-- **Atajos de teclado, pistas y porcentaje por etiqueta** en la sección quedaron
-  pendientes: son Fase 3 explícitamente.
+- **Modo claro/oscuro automático** con `prefers-color-scheme`. No hay toggle
+  manual (Fase 3).
+- **Tokens semánticos** (`canvas`, `surface`, `ink`, `rule`, `accent`, `good`,
+  `bad`, `mustard`) como variables CSS expuestas a Tailwind con `@theme inline`.
+  Ningún color hardcodeado en componentes.
+- **Tipografía:** Newsreader (OFL) self-hosted en `public/fonts` para títulos;
+  system-ui para UI; monoespaciada del sistema para código. Sin Google Fonts en
+  runtime.
+- **Acierto/error no dependen solo del color:** ícono + texto ("Correcta", "Tu
+  respuesta") y leyenda con cifras en resultados.
+- **El resultado de la sesión se cuenta dos veces:** puntaje grande, `%`,
+  mensaje, y una tira con un segmento por pregunta (verde/rojo) para ver el patrón
+  de aciertos de un vistazo.
+- **Etiquetas mostradas según el contenido**, no la lista completa del README:
+  mostrar etiquetas con 0 preguntas habría sido ruido.
 
 ## Tests
 
-45 tests con Vitest:
+66 tests con Vitest:
 
-- `lib/session.test.ts`: filtros, orden fijo/aleatorio determinístico, recorte,
-  mezcla de opciones sin perder la correcta, filtro por ids, no mutación.
+- `lib/session.test.ts`: filtros (tema, etiqueta, tipo, dificultad, ids,
+  lenguaje con variantes), orden fijo/aleatorio determinístico, recorte, mezcla
+  de opciones sin perder la correcta, no mutación.
+- `lib/code.test.ts`: snippets por pregunta, deduplicación por lenguaje,
+  preferencia de lenguaje.
 - `lib/scoring.test.ts`: puntaje, accuracy, desglose por tema/etiqueta, orden de
   etiquetas de peor a mejor, errores, casos vacíos.
-- `lib/schema.test.ts`: contenido inválido (menos de 4 opciones, correcta
-  inexistente, ids repetidos, falta de código, `highlightLines` fuera de rango,
-  explicaciones huérfanas).
-- `content/content.test.ts`: 10 por tema, 4 opciones, explicación para cada
-  distractor, snippets ≤ 25 líneas, ids únicos.
-- `components/QuestionCard.test.tsx`: render de opciones, feedback correcto e
-  incorrecto, callbacks.
+- `lib/schema.test.ts`: contenido inválido (opciones, correcta inexistente, ids
+  repetidos, falta de código, highlights fuera de rango, variantes mal declaradas).
+- `content/content.test.ts`: cobertura por tema, 4 opciones, explicación de cada
+  distractor, snippets ≤ 25 líneas (variantes incluidas), los 4 tipos existen,
+  hay Java y React.
+- `components/QuestionCard.test.tsx`: opciones, feedback, etiqueta oculta hasta
+  responder, callbacks.
 
 ## Pendiente
-
-### Fase 2
-- Modo mixto real: selección de temas, filtros por etiqueta, "solo las que fallé".
-- Tipos `identify-pattern` y `choose-fix`.
-- Preguntas y snippets en React (`tsx`), selector Java/React en la pregunta.
-- Habilitar la opción "React" del filtro de lenguaje.
 
 ### Fase 3
 - Persistencia de progreso en `localStorage` (por pregunta, etiqueta y tema).
 - Página `/progreso` con las 5 etiquetas más débiles y reinicio con confirmación.
-- "Solo las que fallé" en el modo mixto.
+- «Solo las que fallé» en el modo mixto.
 - Atajos `1`–`4`, `Enter` y `H` (pista).
 - Toggle manual de tema claro/oscuro.
+- Porcentaje de aciertos por etiqueta en las páginas de sección.
 
 ### Fase 4
 - Exportar/importar progreso, modo examen con temporizador, más preguntas por
-  etiqueta (hasta cumplir la tabla completa de la sección 9).
+  etiqueta hasta cumplir la tabla completa de la sección 9.
 
 ### Deuda técnica conocida
-- La app no persiste la sesión en curso; recargar la pierde (decisión de Fase 1).
-- El bundle incluye el highlighter completo de Prism para `java`/`tsx`
-  (~124 kB gzip total); si crece, se puede dividir por ruta.
-- No hay tests end-to-end; la verificación de flujo se hizo a mano en el navegador
-  (desktop y 390 px).
+- La app no persiste la sesión en curso; recargar la pierde.
+- El bundle incluye Prism para `java` y `tsx` (~125 kB gzip total); si crece, se
+  puede dividir por ruta.
+- No hay tests end-to-end; los flujos se verificaron a mano en el navegador
+  (desktop y 390 px, claro y oscuro).
+- Las preguntas con dos variantes comparten un solo `prompt`: está redactado de
+  forma neutral ("este código"). Si una variante necesitara otro enunciado, hay
+  que duplicar la pregunta.

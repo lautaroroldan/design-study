@@ -14,6 +14,7 @@ import {
   SessionConfigPanel,
 } from '../components/SessionConfigPanel';
 import { ArrowLeftIcon, CheckIcon } from '../components/icons';
+import { MetaLine } from '../components/MetaLine';
 
 interface SectionProps {
   topic: Topic;
@@ -89,17 +90,17 @@ export function Section({ topic }: SectionProps) {
           {meta.focus}
         </p>
 
-        <p className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
-          <span className="tabular">{questions.length} preguntas</span>
-          <span aria-hidden="true">·</span>
-          <span className="tabular">{tags.length} etiquetas</span>
-          <span aria-hidden="true">·</span>
-          <span>snippets en Java</span>
-        </p>
-      </header>
+        <MetaLine
+          className="mt-5"
+          items={[
+            `${questions.length} preguntas`,
+            `${tags.length} etiquetas`,
+            'snippets en Java y React',
+          ]}
+        />      </header>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_370px] lg:gap-12">
-        <section aria-labelledby="tags-title">
+        <section aria-labelledby="tags-title" className="order-last lg:order-none">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="tags-title" className="font-serif text-[19px] text-ink">
               Practicar una etiqueta
@@ -156,7 +157,7 @@ export function Section({ topic }: SectionProps) {
           </p>
         </section>
 
-        <aside className="lg:sticky lg:top-24 lg:h-fit">
+        <aside className="order-first lg:order-none lg:sticky lg:top-24 lg:h-fit">
           <SessionConfigPanel
             config={config}
             onChange={(patch) => setConfig((previous) => ({ ...previous, ...patch }))}

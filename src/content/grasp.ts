@@ -278,4 +278,174 @@ class ReporteTotales {
       d: 'Polymorphism es el mecanismo que se usa para lograrlo, pero el patrón que nombra el criterio de diseño es Protected Variations.',
     },
   },
+  {
+    id: 'grasp-controller-002',
+    topic: 'grasp',
+    tag: 'Controller',
+    type: 'identify-pattern',
+    difficulty: 2,
+    prompt: '¿Qué patrón GRASP aplica este código?',
+    code: {
+      language: 'java',
+      source: `class VentasController {
+    private final CarritoService carrito;
+    private final PagoService pagos;
+
+    void agregarAlCarrito(String productoId, int cantidad) {
+        carrito.agregar(productoId, cantidad);
+    }
+
+    Recibo confirmarCompra(String carritoId) {
+        return pagos.cobrar(carrito.confirmar(carritoId));
+    }
+}`,
+      highlightLines: [1, 5, 9],
+    },
+    options: [
+      { id: 'a', text: 'Controller' },
+      { id: 'b', text: 'Information Expert' },
+      { id: 'c', text: 'Creator' },
+      { id: 'd', text: 'Pure Fabrication' },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'Controller: un objeto de la capa de aplicación recibe los eventos del sistema (las acciones de la UI) y delega en los servicios de dominio, sin quedarse con la lógica de negocio.',
+    optionExplanations: {
+      b: 'Information Expert asigna responsabilidades a quien tiene los datos; el controller no calcula nada, solo recibe y delega.',
+      c: 'Creator decide quién crea objetos; acá no se crea nada.',
+      d: 'Pure Fabrication justifica una clase inventada para bajar acoplamiento, pero no describe el punto de entrada de los eventos.',
+    },
+    hint: 'Punto de entrada de los eventos de la interfaz.',
+  },
+  {
+    id: 'grasp-polymorphism-002',
+    topic: 'grasp',
+    tag: 'Polymorphism',
+    type: 'identify-pattern',
+    difficulty: 2,
+    prompt: '¿Qué patrón GRASP aplica este código?',
+    code: {
+      language: 'java',
+      source: `interface MetodoPago {
+    BigDecimal comision(BigDecimal monto);
+}
+
+class Tarjeta implements MetodoPago {
+    public BigDecimal comision(BigDecimal monto) {
+        return monto.multiply(new BigDecimal("0.03"));
+    }
+}
+
+BigDecimal total(List<MetodoPago> pagos, BigDecimal monto) {
+    BigDecimal total = monto;
+    for (MetodoPago pago : pagos) {
+        total = total.add(pago.comision(monto));
+    }
+    return total;
+}`,
+      highlightLines: [1, 12, 15],
+    },
+    codeVariants: {
+      tsx: {
+        language: 'tsx',
+        source: `type MetodoPago = { comision: (monto: number) => number };
+
+const tarjeta: MetodoPago = { comision: (monto) => monto * 0.03 };
+const cripto: MetodoPago = { comision: (monto) => monto * 0.01 };
+
+function total(pagos: MetodoPago[], monto: number) {
+  return pagos.reduce((suma, pago) => suma + pago.comision(monto), monto);
+}`,
+        highlightLines: [1, 3, 6, 7],
+      },
+    },
+    options: [
+      { id: 'a', text: 'Polymorphism' },
+      { id: 'b', text: 'Low Coupling' },
+      { id: 'c', text: 'Indirection' },
+      { id: 'd', text: 'Protected Variations' },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'Cada implementación resuelve su comisión detrás de la misma interfaz y el cliente repite el mismo mensaje sin preguntar el tipo. Así se evita el switch por tipo de pago.',
+    optionExplanations: {
+      b: 'Low Coupling es un efecto secundario deseable, pero el patrón que describe el reparto de comportamiento por tipo es Polymorphism.',
+      c: 'Indirection interpone un intermediario; acá no hay intermediario, hay varias implementaciones.',
+      d: 'Protected Variations protege ante cambios futuros; el mecanismo concreto que se ve es el polimorfismo.',
+    },
+    hint: 'El mismo mensaje, distintas implementaciones.',
+  },
+  {
+    id: 'grasp-information-expert-003',
+    topic: 'grasp',
+    tag: 'Information Expert',
+    type: 'identify-pattern',
+    difficulty: 1,
+    prompt: '¿Qué patrón GRASP aplica este código?',
+    code: {
+      language: 'java',
+      source: `class Pedido {
+    private final List<LineaPedido> lineas;
+
+    BigDecimal total() {
+        return lineas.stream()
+            .map(LineaPedido::subtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+}`,
+      highlightLines: [4, 5, 6],
+    },
+    options: [
+      { id: 'a', text: 'Information Expert' },
+      { id: 'b', text: 'Creator' },
+      { id: 'c', text: 'Controller' },
+      { id: 'd', text: 'Low Coupling' },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'La responsabilidad de calcular el total está en quien tiene los datos (las líneas del pedido). Nadie más necesita conocer la estructura interna para sumar.',
+    optionExplanations: {
+      b: 'Creator trata de quién crea objetos; total() no crea nada.',
+      c: 'Controller recibe eventos del sistema, no calcula totales del dominio.',
+      d: 'Low Coupling es una consecuencia de asignar bien la responsabilidad, no el patrón que la describe.',
+    },
+    hint: 'Quien tiene los datos, hace el cálculo.',
+  },
+  {
+    id: 'grasp-low-coupling-002',
+    topic: 'grasp',
+    tag: 'Low Coupling',
+    type: 'identify-pattern',
+    difficulty: 2,
+    prompt: '¿Qué patrón GRASP guía este diseño?',
+    code: {
+      language: 'tsx',
+      source: `type Props = { notificador: Notificador };
+
+export function BotonPagar({ notificador }: Props) {
+  const pagar = async () => {
+    const recibo = await cobrar();
+    notificador.enviar(recibo.cliente, recibo);
+  };
+
+  return <button onClick={pagar}>Pagar</button>;
+}`,
+      highlightLines: [1, 3, 6],
+    },
+    options: [
+      { id: 'a', text: 'Low Coupling' },
+      { id: 'b', text: 'High Cohesion' },
+      { id: 'c', text: 'Creator' },
+      { id: 'd', text: 'Controller' },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'El componente depende de una abstracción que recibe de afuera (Notificador) en lugar de importar un cliente concreto de email. Menos dependencias fijas: se puede cambiar el canal o usar un doble en tests sin tocar el componente.',
+    optionExplanations: {
+      b: 'High Cohesion habla de responsabilidades relacionadas dentro de una clase; acá el foco está en las dependencias externas.',
+      c: 'Creator decide quién crea objetos, no cómo se inyectan dependencias.',
+      d: 'Controller es el punto de entrada de los eventos del sistema, no el criterio de acoplamiento.',
+    },
+    hint: 'Depender de lo mínimo y de abstracciones.',
+  },
 ] satisfies Question[];

@@ -13,6 +13,9 @@ export function Session() {
   const answer = useSessionStore((state) => state.answer);
   const next = useSessionStore((state) => state.next);
   const reset = useSessionStore((state) => state.reset);
+  const config = useSessionStore((state) => state.config);
+
+  const defaultLang = config && config.lang !== 'both' ? config.lang : undefined;
 
   if (status === 'finished') {
     return <Results />;
@@ -75,6 +78,7 @@ export function Session() {
 
       <div className="mt-6">
         <QuestionCard
+          key={current.question.id}
           item={current}
           index={currentIndex}
           total={questions.length}
@@ -83,6 +87,7 @@ export function Session() {
           isLast={isLast}
           onSelect={answer}
           onNext={next}
+          defaultLang={defaultLang}
         />
       </div>
 

@@ -1,10 +1,10 @@
-import type { SessionQuestion } from '../types';
+import type { Lang, SessionQuestion } from '../types';
 import {
   DIFFICULTY_LABELS,
   QUESTION_TYPE_LABELS,
   TOPIC_SHORT_LABELS,
 } from '../lib/labels';
-import { CodeBlock } from './CodeBlock';
+import { CodeViewer } from './CodeViewer';
 import { OptionList, optionLetter } from './OptionList';
 import { Button } from './Button';
 import { ArrowRightIcon, CheckIcon, CrossIcon } from './icons';
@@ -18,6 +18,8 @@ interface QuestionCardProps {
   isLast: boolean;
   onSelect: (optionId: string) => void;
   onNext: () => void;
+  /** Lenguaje por defecto según el filtro de la sesión. */
+  defaultLang?: Lang;
 }
 
 function DifficultyDots({ level }: { level: 1 | 2 | 3 }) {
@@ -46,6 +48,7 @@ export function QuestionCard({
   isLast,
   onSelect,
   onNext,
+  defaultLang,
 }: QuestionCardProps) {
   const { question, options } = item;
   const isCorrect = selectedOptionId === question.correctOptionId;
@@ -72,11 +75,16 @@ export function QuestionCard({
         <span aria-hidden="true" className="text-rule-strong">
           ·
         </span>
-        <span className="text-ink-2">{question.tag}</span>
-        <span aria-hidden="true" className="text-rule-strong">
-          ·
-        </span>
         <span>{QUESTION_TYPE_LABELS[question.type]}</span>
+        {/* La etiqueta es la respuesta en la mayoría de los ejercicios: recién se muestra al responder. */}
+        {revealed ? (
+          <>
+            <span aria-hidden="true" className="text-rule-strong">
+              ·
+            </span>
+            <span className="text-ink-2">{question.tag}</span>
+          </>
+        ) : null}
         <span className="ml-auto">
           <DifficultyDots level={question.difficulty} />
         </span>
@@ -88,7 +96,7 @@ export function QuestionCard({
 
       {question.code ? (
         <div className="mt-4">
-          <CodeBlock code={question.code} revealed={revealed} />
+          <CodeViewer question={question} defaultLang={defaultLang} revealed={revealed} />
         </div>
       ) : null}
 

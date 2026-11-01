@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { snippetsOf } from '../lib/code';
 import {
   TOPICS,
   allQuestions,
@@ -7,17 +8,19 @@ import {
   tagsForTopic,
 } from './index';
 
-describe('contenido de la Fase 1', () => {
+const TYPES = ['concept', 'identify-pattern', 'find-violation', 'choose-fix'] as const;
+
+describe('contenido', () => {
   it('carga sin errores de validación', () => {
     expect(contentError).toBeNull();
   });
 
-  it('tiene 10 preguntas por tema', () => {
+  it('tiene al menos 10 preguntas por tema', () => {
     for (const topic of TOPICS) {
-      expect(questionsByTopic(topic), `tema ${topic}`).toHaveLength(10);
+      expect(questionsByTopic(topic).length, `tema ${topic}`).toBeGreaterThanOrEqual(10);
     }
 
-    expect(allQuestions).toHaveLength(30);
+    expect(allQuestions.length).toBeGreaterThanOrEqual(40);
   });
 
   it('todas las preguntas tienen 4 opciones y una correcta entre ellas', () => {
@@ -42,14 +45,14 @@ describe('contenido de la Fase 1', () => {
     }
   });
 
-  it('los snippets no superan las 25 líneas', () => {
+  it('los snippets no superan las 25 líneas, variantes incluidas', () => {
     for (const question of allQuestions) {
-      if (!question.code) continue;
-
-      expect(
-        question.code.source.split('\n').length,
-        `${question.id} tiene un snippet largo`,
-      ).toBeLessThanOrEqual(25);
+      for (const snippet of snippetsOf(question)) {
+        expect(
+          snippet.source.split('\n').length,
+          `${question.id} (${snippet.language}) tiene un snippet largo`,
+        ).toBeLessThanOrEqual(25);
+      }
     }
   });
 
@@ -63,6 +66,46 @@ describe('contenido de la Fase 1', () => {
       const withCode = questionsByTopic(topic).filter((question) => question.code);
       expect(withCode.length, `tema ${topic}`).toBeGreaterThan(0);
     }
+  });
+
+  it('hay preguntas con código Java y con código React', () => {
+    const langs = new Set(
+      allQuestions.flatMap((question) =>
+        snippetsOf(question).map((snippet) => snippet.language),
+      ),
+    );
+
+    expect(langs).toEqual(new Set(['java', 'tsx']));
+  });
+
+  it('las variantes tienen lenguajes distintos de la primaria', () => {
+    for (const question of allQuestions) {
+      if (!question.codeVariants) continue;
+
+      for (const [lang, snippet] of Object.entries(question.codeVariants)) {
+        expect(snippet?.language, `${question.id} → ${lang}`).toBe(lang);
+        expect(lang).not.toBe(question.code?.language);
+      }
+    }
+  });
+
+  it('existen los cuatro tipos de ejercicio', () => {
+    for (const type of TYPES) {
+      expect(
+        allQuestions.some((question) => question.type === type),
+        `tipo ${type}`,
+      ).toBe(true);
+    }
+  });
+
+  it('GoF y GRASP tienen identify-pattern; SOLID y GoF tienen choose-fix', () => {
+    const hasType = (topic: string, type: string) =>
+      allQuestions.some((question) => question.topic === topic && question.type === type);
+
+    expect(hasType('gof', 'identify-pattern')).toBe(true);
+    expect(hasType('grasp', 'identify-pattern')).toBe(true);
+    expect(hasType('gof', 'choose-fix')).toBe(true);
+    expect(hasType('solid', 'choose-fix')).toBe(true);
   });
 
   it('las etiquetas salen del contenido en orden canónico', () => {

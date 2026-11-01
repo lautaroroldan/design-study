@@ -259,4 +259,491 @@ export const gofQuestions = [
     },
     hint: 'Una interfaz CalculadoraImpuesto con una implementación por país.',
   },
+  {
+    id: 'gof-adapter-002',
+    topic: 'gof',
+    tag: 'Adapter',
+    type: 'identify-pattern',
+    difficulty: 2,
+    prompt: '¿Qué patrón GoF implementa este código?',
+    code: {
+      language: 'java',
+      source: `class PagoStripeAdapter implements PagoService {
+    private final StripeSdk sdk;
+
+    PagoStripeAdapter(StripeSdk sdk) {
+        this.sdk = sdk;
+    }
+
+    @Override
+    public void cobrar(double monto) {
+        sdk.charge((int) Math.round(monto * 100), "ARS");
+    }
+}`,
+      highlightLines: [1, 2, 9, 10],
+    },
+    codeVariants: {
+      tsx: {
+        language: 'tsx',
+        source: `type ProductoApi = { id: number; title: string; price_cents: number };
+type Producto = { id: string; nombre: string; precio: number };
+
+export function adaptarProducto(api: ProductoApi): Producto {
+  return {
+    id: String(api.id),
+    nombre: api.title,
+    precio: api.price_cents / 100,
+  };
+}`,
+        highlightLines: [1, 2, 4, 8],
+      },
+    },
+    options: [
+      { id: 'a', text: 'Adapter' },
+      { id: 'b', text: 'Facade' },
+      { id: 'c', text: 'Decorator' },
+      { id: 'd', text: 'Proxy' },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'Traduce la interfaz del SDK externo (charge, centavos) a la que espera el cliente (cobrar, pesos) sin modificar ninguna de las dos. En React, la función de mapeo hace lo mismo con la forma de la respuesta de la API.',
+    optionExplanations: {
+      b: 'Facade simplifica el acceso a un conjunto de APIs, pero no convierte una interfaz en otra.',
+      c: 'Decorator implementa la misma interfaz que el objeto envuelto y le agrega comportamiento; acá las interfaces son distintas.',
+      d: 'Proxy también comparte la interfaz del objeto real, pero su objetivo es controlar el acceso, no traducir tipos.',
+    },
+    hint: 'El nombre del patrón aparece en la forma en que se conectan dos contratos incompatibles.',
+  },
+  {
+    id: 'gof-decorator-002',
+    topic: 'gof',
+    tag: 'Decorator',
+    type: 'identify-pattern',
+    difficulty: 2,
+    prompt: '¿Qué patrón GoF aplica este código?',
+    code: {
+      language: 'tsx',
+      source: `function withLogging<P extends object>(Componente: React.ComponentType<P>) {
+  return (props: P) => {
+    console.log('render', props);
+    return <Componente {...props} />;
+  };
+}
+
+const ListaConLog = withLogging(Lista);`,
+      highlightLines: [1, 2, 4, 8],
+    },
+    codeVariants: {
+      java: {
+        language: 'java',
+        source: `class CafeConLeche implements Bebida {
+    private final Bebida base;
+
+    CafeConLeche(Bebida base) {
+        this.base = base;
+    }
+
+    public double precio() {
+        return base.precio() + 120;
+    }
+}`,
+        highlightLines: [1, 2, 8, 9],
+      },
+    },
+    options: [
+      { id: 'a', text: 'Observer' },
+      { id: 'b', text: 'Decorator' },
+      { id: 'c', text: 'Singleton' },
+      { id: 'd', text: 'Facade' },
+    ],
+    correctOptionId: 'b',
+    explanation:
+      'Envuelve un objeto del mismo tipo y le agrega comportamiento (logging en el HOC, precio en el café) sin modificarlo, y se pueden apilar varios. El HOC y el envoltorio Java son la misma idea.',
+    optionExplanations: {
+      a: 'Observer notifica cambios de estado a una lista de suscriptores; acá no hay notificación.',
+      c: 'Singleton garantiza una única instancia; acá se crea un envoltorio por uso.',
+      d: 'Facade simplifica un subsistema, pero no implementa el mismo contrato que el objeto envuelto.',
+    },
+    hint: 'Envolver algo que ya cumple la interfaz y sumarle algo encima.',
+  },
+  {
+    id: 'gof-observer-002',
+    topic: 'gof',
+    tag: 'Observer',
+    type: 'identify-pattern',
+    difficulty: 3,
+    prompt: '¿Qué patrón GoF implementa este código?',
+    code: {
+      language: 'java',
+      source: `interface ObservadorPrecio {
+    void actualizar(BigDecimal precio);
+}
+
+class Accion {
+    private final List<ObservadorPrecio> observadores = new ArrayList<>();
+
+    void suscribir(ObservadorPrecio observador) {
+        observadores.add(observador);
+    }
+
+    void actualizarPrecio(BigDecimal precio) {
+        observadores.forEach(o -> o.actualizar(precio));
+    }
+}`,
+      highlightLines: [1, 6, 8, 13],
+    },
+    codeVariants: {
+      tsx: {
+        language: 'tsx',
+        source: `const listeners = new Set<() => void>();
+let precioActual = 0;
+
+export function suscribir(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function usePrecio() {
+  return useSyncExternalStore(suscribir, () => precioActual);
+}`,
+        highlightLines: [1, 4, 5, 12],
+      },
+    },
+    options: [
+      { id: 'a', text: 'Mediator' },
+      { id: 'b', text: 'Observer' },
+      { id: 'c', text: 'Strategy' },
+      { id: 'd', text: 'Command' },
+    ],
+    correctOptionId: 'b',
+    explanation:
+      'Un sujeto mantiene una lista de interesados y les avisa cuando cambia el estado. En React, suscribir más useSyncExternalStore expresa la misma relación entre la fuente de datos y los componentes.',
+    optionExplanations: {
+      a: 'Mediator centraliza la comunicación entre objetos que se conocen entre sí; acá el sujeto solo notifica hacia afuera.',
+      c: 'Strategy intercambia algoritmos, no notifica cambios de estado.',
+      d: 'Command encapsula una acción como objeto; no hay lista de interesados.',
+    },
+    hint: 'Suscribir, guardar interesados y avisarles a todos.',
+  },
+  {
+    id: 'gof-facade-002',
+    topic: 'gof',
+    tag: 'Facade',
+    type: 'identify-pattern',
+    difficulty: 2,
+    prompt: '¿Qué patrón GoF aplica este código?',
+    code: {
+      language: 'tsx',
+      source: `export function useCheckout(carrito: Carrito) {
+  const { reservar } = useStock();
+  const { cobrar } = usePagos();
+  const { programar } = useEnvios();
+
+  return async () => {
+    await reservar(carrito);
+    await cobrar(carrito.total);
+    await programar(carrito);
+  };
+}`,
+      highlightLines: [1, 2, 3, 4, 6],
+    },
+    codeVariants: {
+      java: {
+        language: 'java',
+        source: `class CheckoutFacade {
+    private final Stock stock;
+    private final Pagos pagos;
+    private final Envios envios;
+
+    void comprar(Carrito carrito) {
+        stock.reservar(carrito);
+        pagos.cobrar(carrito.total());
+        envios.programar(carrito);
+    }
+}`,
+        highlightLines: [1, 6, 7, 8, 9],
+      },
+    },
+    options: [
+      { id: 'a', text: 'Facade' },
+      { id: 'b', text: 'Adapter' },
+      { id: 'c', text: 'Proxy' },
+      { id: 'd', text: 'Mediator' },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'Un solo punto de entrada (useCheckout o CheckoutFacade) esconde la coordinación de tres subsistemas. El cliente no necesita conocer stock, pagos ni envíos.',
+    optionExplanations: {
+      b: 'Adapter traduce una interfaz incompatible; acá no hay dos contratos que conectar, hay un conjunto de pasos que simplificar.',
+      c: 'Proxy controla el acceso a un objeto que ya existe; acá se orquesta a varios.',
+      d: 'Mediator coordina objetos que se comunican en ambas direcciones; este flujo es de una sola dirección y busca simplificar la API.',
+    },
+    hint: 'Un único punto de entrada que coordina varios subsistemas.',
+  },
+  {
+    id: 'gof-composite-002',
+    topic: 'gof',
+    tag: 'Composite',
+    type: 'identify-pattern',
+    difficulty: 2,
+    prompt: '¿Qué patrón GoF aplica este código?',
+    code: {
+      language: 'tsx',
+      source: `type Nodo = { nombre: string; hijos?: Nodo[] };
+
+function Arbol({ nodo, nivel = 0 }: { nodo: Nodo; nivel?: number }) {
+  return (
+    <div style={{ marginLeft: nivel * 12 }}>
+      {nodo.nombre}
+      {nodo.hijos?.map((hijo) => (
+        <Arbol key={hijo.nombre} nodo={hijo} nivel={nivel + 1} />
+      ))}
+    </div>
+  );
+}`,
+      highlightLines: [1, 3, 7, 8],
+    },
+    options: [
+      { id: 'a', text: 'Composite' },
+      { id: 'b', text: 'Decorator' },
+      { id: 'c', text: 'Iterator' },
+      { id: 'd', text: 'Chain of Responsibility' },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'El mismo componente trata igual a una hoja (sin hijos) y a un nodo con hijos, y se llama a sí mismo para recorrer la estructura parte-todo. Es la versión React del Composite.',
+    optionExplanations: {
+      b: 'Decorator envuelve un objeto para sumarle comportamiento; acá se modela una jerarquía, no un envoltorio.',
+      c: 'Iterator recorre una colección, pero no representa una estructura de árbol.',
+      d: 'Chain of Responsibility pasa una solicitud entre eslabones; acá no hay decisión de quién maneja.',
+    },
+    hint: 'Hoja y contenedor comparten la misma interfaz.',
+  },
+  {
+    id: 'gof-proxy-002',
+    topic: 'gof',
+    tag: 'Proxy',
+    type: 'identify-pattern',
+    difficulty: 3,
+    prompt: '¿Qué patrón GoF aplica este código?',
+    code: {
+      language: 'tsx',
+      source: `const DetalleProducto = lazy(() => import('./DetalleProducto'));
+
+function FichaProducto({ id }: { id: string }) {
+  return (
+    <Suspense fallback={<p>Cargando...</p>}>
+      <DetalleProducto id={id} />
+    </Suspense>
+  );
+}`,
+      highlightLines: [1, 5, 6],
+    },
+    codeVariants: {
+      java: {
+        language: 'java',
+        source: `class ImagenProxy implements Imagen {
+    private ImagenReal real;
+
+    public void dibujar() {
+        if (real == null) {
+            real = new ImagenReal();
+        }
+        real.dibujar();
+    }
+}`,
+        highlightLines: [1, 2, 5, 6, 8],
+      },
+    },
+    options: [
+      { id: 'a', text: 'Decorator' },
+      { id: 'b', text: 'Proxy' },
+      { id: 'c', text: 'Facade' },
+      { id: 'd', text: 'Adapter' },
+    ],
+    correctOptionId: 'b',
+    explanation:
+      'Expone el mismo contrato que el objeto real, pero controla cuándo se crea o se carga: lazy más Suspense en React, creación diferida en Java. El cliente cree que habla con el objeto final.',
+    optionExplanations: {
+      a: 'Decorator también comparte la interfaz, pero agrega comportamiento y siempre delega en el envuelto; acá se decide si siquiera crearlo.',
+      c: 'Facade no implementa el mismo contrato ni representa a un único objeto.',
+      d: 'Adapter convierte una interfaz en otra; acá se conserva la misma.',
+    },
+    hint: 'Mismo contrato que el original, pero con carga diferida.',
+  },
+  {
+    id: 'gof-command-002',
+    topic: 'gof',
+    tag: 'Command',
+    type: 'identify-pattern',
+    difficulty: 2,
+    prompt: '¿Qué patrón GoF aplica este código?',
+    code: {
+      language: 'tsx',
+      source: `type Accion =
+  | { type: 'agregar'; item: Item }
+  | { type: 'quitar'; id: string };
+
+function carrito(state: Item[], accion: Accion): Item[] {
+  switch (accion.type) {
+    case 'agregar':
+      return [...state, accion.item];
+    case 'quitar':
+      return state.filter((item) => item.id !== accion.id);
+  }
+}
+
+const [items, dispatch] = useReducer(carrito, []);
+dispatch({ type: 'agregar', item });`,
+      highlightLines: [1, 5, 6, 7, 14],
+    },
+    codeVariants: {
+      java: {
+        language: 'java',
+        source: `interface Comando {
+    void ejecutar();
+}
+
+class AgregarItem implements Comando {
+    private final Carrito carrito;
+    private final Item item;
+
+    public void ejecutar() {
+        carrito.agregar(item);
+    }
+}`,
+        highlightLines: [1, 5, 9, 10],
+      },
+    },
+    options: [
+      { id: 'a', text: 'Strategy' },
+      { id: 'b', text: 'Command' },
+      { id: 'c', text: 'Observer' },
+      { id: 'd', text: 'State' },
+    ],
+    correctOptionId: 'b',
+    explanation:
+      'Cada acción se representa como un dato u objeto con su tipo y parámetros, y se entrega a un ejecutor (dispatch en React, un invoker en Java). El receptor no conoce los detalles de la operación.',
+    optionExplanations: {
+      a: 'Strategy elige un algoritmo entre varios; acá se encapsula una acción con sus parámetros para ejecutarla después.',
+      c: 'Observer notifica cambios a suscriptores, no ejecuta acciones.',
+      d: 'State cambia el comportamiento según un estado interno, no representa operaciones.',
+    },
+    hint: 'La acción es un objeto o un dato que después se ejecuta.',
+  },
+  {
+    id: 'gof-chain-002',
+    topic: 'gof',
+    tag: 'Chain of Responsibility',
+    type: 'identify-pattern',
+    difficulty: 3,
+    prompt: '¿Qué patrón GoF aplica este código?',
+    code: {
+      language: 'tsx',
+      source: `type Middleware = (pedido: Pedido, next: () => void) => void;
+
+function ejecutar(cadena: Middleware[], pedido: Pedido) {
+  const paso = (indice: number): void => {
+    const actual = cadena[indice];
+    if (!actual) return;
+    actual(pedido, () => paso(indice + 1));
+  };
+
+  paso(0);
+}`,
+      highlightLines: [1, 4, 6, 7, 10],
+    },
+    codeVariants: {
+      java: {
+        language: 'java',
+        source: `abstract class Manejador {
+    private Manejador siguiente;
+
+    Manejador setSiguiente(Manejador siguiente) {
+        this.siguiente = siguiente;
+        return siguiente;
+    }
+
+    void manejar(Solicitud solicitud) {
+        if (puedeResolver(solicitud)) {
+            resolver(solicitud);
+        } else if (siguiente != null) {
+            siguiente.manejar(solicitud);
+        }
+    }
+
+    abstract boolean puedeResolver(Solicitud solicitud);
+    abstract void resolver(Solicitud solicitud);
+}`,
+        highlightLines: [1, 9, 10, 13],
+      },
+    },
+    options: [
+      { id: 'a', text: 'Chain of Responsibility' },
+      { id: 'b', text: 'Decorator' },
+      { id: 'c', text: 'Command' },
+      { id: 'd', text: 'Observer' },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'Cada eslabón decide si maneja la solicitud o la pasa al siguiente, y el emisor no sabe cuál la resuelve. Los middlewares de React o Express son la versión encadenada de esta idea.',
+    optionExplanations: {
+      b: 'Decorator envuelve para agregar comportamiento y siempre ejecuta al envuelto; acá se decide quién maneja y el resto no se ejecuta.',
+      c: 'Command encapsula una acción; no hay cadena de responsables.',
+      d: 'Observer notifica a todos los interesados; acá la solicitud se atiende una sola vez.',
+    },
+    hint: 'Si este no puede, que lo intente el siguiente.',
+  },
+  {
+    id: 'gof-factory-002',
+    topic: 'gof',
+    tag: 'Factory Method',
+    type: 'choose-fix',
+    difficulty: 3,
+    prompt:
+      'Cada formato nuevo obliga a editar crear(). ¿Cuál refactorización aplica mejor Factory Method?',
+    code: {
+      language: 'java',
+      source: `class ReporteService {
+    Documento crear(String formato) {
+        if (formato.equals("pdf")) {
+            return new ReportePdf();
+        } else if (formato.equals("csv")) {
+            return new ReporteCsv();
+        }
+        throw new IllegalArgumentException("formato desconocido");
+    }
+}`,
+      highlightLines: [2, 3, 5, 8],
+    },
+    options: [
+      {
+        id: 'a',
+        text: 'Mover el if/else a una clase ReporteFactory estática y llamar ReporteFactory.crear(formato).',
+      },
+      {
+        id: 'b',
+        text: 'Convertir ReporteService en una clase base con el flujo común y un método abstracto crearDocumento(); una subclase por formato.',
+      },
+      {
+        id: 'c',
+        text: 'Recibir un Documento ya construido por constructor y eliminar crear().',
+      },
+      {
+        id: 'd',
+        text: 'Reemplazar los if por un enum Formato con un switch dentro del constructor de Documento.',
+      },
+    ],
+    correctOptionId: 'b',
+    explanation:
+      'Factory Method deja el algoritmo en la clase base y delega la creación en la subclase: agregar un formato es agregar una subclase, no volver a editar la clase existente.',
+    optionExplanations: {
+      a: 'Mover el switch a otra clase lo esconde, pero cada formato nuevo sigue obligando a modificarlo.',
+      c: 'Eso traslada la creación al llamador: el servicio deja de decidir y el acoplamiento aumenta.',
+      d: 'El switch sigue existiendo y ahora vive dentro de Documento, que es peor: mezcla el producto con la creación.',
+    },
+    hint: 'La creación es el punto que varía por subclase.',
+  },
 ] satisfies Question[];

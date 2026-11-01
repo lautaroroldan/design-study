@@ -18,6 +18,25 @@ export const solidQuestions = [
 }`,
       highlightLines: [1, 2, 3, 4, 5],
     },
+    codeVariants: {
+      tsx: {
+        language: 'tsx',
+        source: `export function PanelPedidos() {
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+
+  useEffect(() => {
+    fetch('/api/pedidos')
+      .then((res) => res.json())
+      .then((data) => setPedidos(normalizar(data)));
+  }, []);
+
+  const total = pedidos.reduce((suma, p) => suma + p.precio, 0);
+
+  return <Tabla pedidos={pedidos} total={total} />;
+}`,
+        highlightLines: [4, 7, 10, 12],
+      },
+    },
     options: [
       { id: 'a', text: 'Open/Closed' },
       { id: 'b', text: 'Single Responsibility' },
@@ -261,6 +280,19 @@ class Robot implements Trabajador {
 }`,
       highlightLines: [2],
     },
+    codeVariants: {
+      tsx: {
+        language: 'tsx',
+        source: `import { usuariosApi } from '../api/usuarios';
+
+export function BotonRegistrar({ usuario }: { usuario: Usuario }) {
+  const registrar = () => usuariosApi.insertar(usuario);
+
+  return <button onClick={registrar}>Registrar</button>;
+}`,
+        highlightLines: [1, 4],
+      },
+    },
     options: [
       { id: 'a', text: 'Single Responsibility' },
       { id: 'b', text: 'Open/Closed' },
@@ -299,5 +331,211 @@ class Robot implements Trabajador {
       c: 'La responsabilidad del caso de uso puede estar bien delimitada; lo que está mal es la dirección de la dependencia.',
       d: 'OCP también se resiente, pero el criterio que describe el problema es depender de una abstracción y no de un detalle.',
     },
+  },
+  {
+    id: 'solid-srp-003',
+    topic: 'solid',
+    tag: 'SRP',
+    type: 'choose-fix',
+    difficulty: 2,
+    prompt:
+      'El método registrar() guarda, manda email, genera un PDF y escribe logs. ¿Cuál refactorización respeta mejor SRP?',
+    code: {
+      language: 'java',
+      source: `class UsuarioService {
+    void registrar(Usuario usuario) {
+        repositorio.insertar(usuario);
+        smtp.enviar(usuario.email(), "Bienvenido");
+        pdf.generar(usuario);
+        log.info("usuario registrado");
+    }
+}`,
+      highlightLines: [2, 3, 4, 5, 6],
+    },
+    options: [
+      {
+        id: 'a',
+        text: 'Separar en UsuarioRepository, EmailBienvenida, ReporteUsuario y Auditoria, y que un caso de uso los coordine.',
+      },
+      {
+        id: 'b',
+        text: 'Hacer privados repositorio, smtp, pdf y log para encapsular los detalles.',
+      },
+      {
+        id: 'c',
+        text: 'Extraer los cuatro pasos a un método privado registrarTodo().',
+      },
+      {
+        id: 'd',
+        text: 'Heredar de BaseService, que ya tiene repositorio y logger.',
+      },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'SRP pide una sola razón para cambiar por módulo. Persistencia, notificación, reporte y auditoría cambian por motivos distintos, así que cada una va a su clase y el caso de uso solo las orquesta.',
+    optionExplanations: {
+      b: 'La encapsulación no separa responsabilidades: la clase sigue cambiando por cuatro motivos.',
+      c: 'Mover las cuatro responsabilidades a un método privado no las separa, solo las agrupa con otro nombre.',
+      d: 'La herencia no divide responsabilidades y además acopla la clase a una base concreta.',
+    },
+    hint: 'Una razón para cambiar por cada módulo.',
+  },
+  {
+    id: 'solid-ocp-003',
+    topic: 'solid',
+    tag: 'OCP',
+    type: 'choose-fix',
+    difficulty: 3,
+    prompt:
+      'Agregar un formato de exportación obliga a editar el if/else. ¿Cuál refactorización cumple mejor Open/Closed?',
+    code: {
+      language: 'java',
+      source: `class Exportador {
+    String exportar(List<Venta> ventas, String formato) {
+        if (formato.equals("csv")) {
+            return aCsv(ventas);
+        } else if (formato.equals("json")) {
+            return aJson(ventas);
+        }
+        throw new IllegalArgumentException("formato desconocido");
+    }
+}`,
+      highlightLines: [2, 3, 5, 8],
+    },
+    options: [
+      {
+        id: 'a',
+        text: 'Reemplazar los if por un enum Formato y un switch más corto.',
+      },
+      {
+        id: 'b',
+        text: 'Definir una interfaz Exportador con un método exportar(List<Venta>) y una implementación por formato, elegida por un registro.',
+      },
+      {
+        id: 'c',
+        text: 'Recibir el formato por constructor y guardarlo en un campo de la clase.',
+      },
+      {
+        id: 'd',
+        text: 'Mover el if/else a una clase ExportadorHelper.',
+      },
+    ],
+    correctOptionId: 'b',
+    explanation:
+      'Con una interfaz, sumar un formato es sumar una implementación: el código existente no se toca. El registro o la inyección solo eligen cuál usar.',
+    optionExplanations: {
+      a: 'Un enum con switch sigue obligando a editar el switch con cada formato nuevo.',
+      c: 'El formato cambia de lugar, pero la decisión por formato sigue dentro de la clase.',
+      d: 'Mover el condicional a otra clase no elimina la modificación: solo cambia el archivo que hay que editar.',
+    },
+    hint: 'Agregar funcionalidad sin abrir el archivo que ya funciona.',
+  },
+  {
+    id: 'solid-dip-003',
+    topic: 'solid',
+    tag: 'DIP',
+    type: 'choose-fix',
+    difficulty: 2,
+    prompt:
+      'El componente importa el cliente HTTP concreto, así que no se puede testear sin red. ¿Cuál refactorización respeta mejor Dependency Inversion?',
+    code: {
+      language: 'tsx',
+      source: `import { api } from '../api';
+
+export function ListaUsuarios() {
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+
+  useEffect(() => {
+    api.get('/usuarios').then((res) => setUsuarios(res.data));
+  }, []);
+
+  return (
+    <ul>
+      {usuarios.map((usuario) => (
+        <li key={usuario.id}>{usuario.nombre}</li>
+      ))}
+    </ul>
+  );
+}`,
+      highlightLines: [1, 7],
+    },
+    options: [
+      {
+        id: 'a',
+        text: 'Recibir por props o Context una interfaz UsuariosApi y usar esa en el componente.',
+      },
+      {
+        id: 'b',
+        text: 'Mover el fetch a una función async dentro del mismo archivo.',
+      },
+      {
+        id: 'c',
+        text: 'Cambiar fetch por axios y centralizar la URL en una constante.',
+      },
+      {
+        id: 'd',
+        text: 'Envolver el componente en React.memo para evitar renders.',
+      },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'El componente de alto nivel debe depender de una abstracción, no del cliente concreto. Con UsuariosApi inyectada, producción usa la API real y los tests usan un doble sin red.',
+    optionExplanations: {
+      b: 'La función sigue importando el cliente concreto: cambia el lugar, no la dependencia.',
+      c: 'Cambiar de librería no invierte nada: el componente sigue acoplado a un detalle.',
+      d: 'React.memo optimiza renders; no tiene relación con la dirección de las dependencias.',
+    },
+    hint: '¿Quién debería decidir qué implementación se usa?',
+  },
+  {
+    id: 'solid-isp-003',
+    topic: 'solid',
+    tag: 'ISP',
+    type: 'choose-fix',
+    difficulty: 2,
+    prompt:
+      'El componente usa usuario y tema, pero su contrato exige cinco props. ¿Cuál refactorización aplica Interface Segregation?',
+    code: {
+      language: 'tsx',
+      source: `type Props = {
+  usuario: Usuario;
+  permisos: Permiso[];
+  preferencias: Preferencias;
+  notificaciones: Notificacion[];
+  tema: Tema;
+};
+
+function Encabezado({ usuario, tema }: Props) {
+  return <header className={tema}>{usuario.nombre}</header>;
+}`,
+      highlightLines: [1, 2, 3, 4, 5, 9],
+    },
+    options: [
+      {
+        id: 'a',
+        text: 'Reducir el contrato a Props = { usuario, tema } y que quien lo use pase solo eso.',
+      },
+      {
+        id: 'b',
+        text: 'Pasar todas las props con spread al header para no romper la firma.',
+      },
+      {
+        id: 'c',
+        text: 'Mover todas las props a un contexto global.',
+      },
+      {
+        id: 'd',
+        text: 'Marcar como opcionales las props que el componente no usa.',
+      },
+    ],
+    correctOptionId: 'a',
+    explanation:
+      'ISP pide que el consumidor no dependa de nada que no use. Si el encabezado solo necesita usuario y tema, ese es todo su contrato.',
+    optionExplanations: {
+      b: 'El spread propaga el contrato gigante y sigue acoplando el componente a datos que no usa.',
+      c: 'Un contexto global empeora el acoplamiento: cualquier cambio en el contexto afecta a todos.',
+      d: 'Opcionales siguen siendo parte del contrato y obligan a quien llama a conocerlos.',
+    },
+    hint: 'El contrato debería ser exactamente lo que el componente necesita.',
   },
 ] satisfies Question[];

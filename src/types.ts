@@ -26,6 +26,11 @@ export interface Question {
   difficulty: Difficulty;
   prompt: string;
   code?: CodeSnippet;
+  /**
+   * Variantes adicionales del snippet, una por lenguaje. `code` es la primaria.
+   * Sirve para la misma pregunta en Java y en React: la UI muestra un selector.
+   */
+  codeVariants?: Partial<Record<Lang, CodeSnippet>>;
   /** Exactamente 4 opciones. */
   options: QuestionOption[];
   correctOptionId: string;
@@ -45,7 +50,7 @@ export type SessionOrder = 'random' | 'fixed';
 
 export interface SessionConfig {
   topics: Topic[];
-  /** Filtro opcional por etiqueta (una sola etiqueta en Fase 1). */
+  /** Filtro opcional por etiqueta (una o varias). */
   tags?: string[];
   /** Filtro opcional por ids, para "repetir los errores". */
   questionIds?: string[];

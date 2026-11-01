@@ -60,6 +60,19 @@ describe('QuestionCard', () => {
     expect(screen.queryByText('Respuesta correcta')).not.toBeInTheDocument();
   });
 
+  it('no revela la etiqueta antes de responder', () => {
+    renderCard();
+
+    // La etiqueta (ISP) es la respuesta: no debe verse en el encabezado.
+    expect(screen.queryByText('ISP')).not.toBeInTheDocument();
+  });
+
+  it('muestra la etiqueta recién al responder', () => {
+    renderCard({ selectedOptionId: 'b', revealed: true });
+
+    expect(screen.getByText('ISP')).toBeInTheDocument();
+  });
+
   it('avisa cuál era la correcta cuando la elegida es incorrecta', () => {
     renderCard({ selectedOptionId: 'a', revealed: true });
 

@@ -1,8 +1,8 @@
 # Design Study
 
 App de estudio para practicar **Patrones GoF**, **Principios SOLID** y **Patrones
-GRASP** con preguntas de opción múltiple, snippets de código y explicación de cada
-distractor.
+GRASP** con preguntas de opción múltiple, snippets de código Java y React, y
+explicación de cada distractor.
 
 La especificación completa vive en [`../README.md`](../README.md).
 Las decisiones tomadas donde la spec no definía nada están en
@@ -10,12 +10,13 @@ Las decisiones tomadas donde la spec no definía nada están en
 
 ## Estado
 
-**Fase 1 (MVP) implementada.** 30 preguntas (10 por tema), tipos `concept` y
-`find-violation`, código Java, sesión completa con feedback, resaltado de líneas
-y resultados.
+**Fases 1 y 2 implementadas.** 47 preguntas (19 GoF, 14 SOLID, 14 GRASP), los
+cuatro tipos de ejercicio (`concept`, `identify-pattern`, `find-violation`,
+`choose-fix`), código en Java y React con selector de lenguaje, modo mixto con
+filtros por tema y etiqueta, y resaltado de líneas al responder.
 
-Modo mixto (Fase 2) y progreso en `localStorage` (Fase 3) están como pantallas
-marcador de posición, sin lógica.
+El progreso en `localStorage` y la página `/progreso` son Fase 3 y están como
+pantalla marcador de posición.
 
 ## Correr el proyecto
 
@@ -38,10 +39,10 @@ npm run dev
 ```
 src/
 ├── content/        # gof.ts, solid.ts, grasp.ts + índice con validación y metadatos
-├── components/     # QuestionCard, CodeBlock, OptionList, SessionConfigPanel, primitivos
-├── pages/          # Home, Section, Session, Results, Mixed, Progress, NotFound
+├── components/     # QuestionCard, CodeViewer, CodeBlock, OptionList, SessionConfigPanel...
+├── pages/          # Home, Section, Mixed, Session, Results, Progress, NotFound
 ├── store/          # estado de la sesión en curso (Zustand)
-├── lib/            # armado de sesiones, scoring, esquema Zod, azar, etiquetas
+├── lib/            # sesiones, scoring, esquema Zod, snippets, azar, etiquetas
 ├── test/           # setup de Vitest
 └── types.ts
 ```
@@ -54,7 +55,18 @@ src/
    responder).
 4. Si tiene `code`, `highlightLines` se valida contra la cantidad de líneas del
    snippet.
-5. `npm test` corre la validación de contenido: si una pregunta está mal formada,
+5. Para la misma pregunta en los dos lenguajes, dejá `code` como snippet primario
+   y agregá la otra variante en `codeVariants` (la clave debe coincidir con
+   `language`):
+
+```ts
+code: { language: 'java', source: '...', highlightLines: [1] },
+codeVariants: {
+  tsx: { language: 'tsx', source: '...', highlightLines: [2, 3] },
+},
+```
+
+6. `npm test` corre la validación de contenido: si una pregunta está mal formada,
    el test y la app fallan con el detalle del campo.
 
 ## Stack

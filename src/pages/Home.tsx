@@ -7,6 +7,7 @@ import {
   tagsForTopic,
 } from '../content';
 import { ArrowRightIcon } from '../components/icons';
+import { MetaLine } from '../components/MetaLine';
 
 export function Home() {
   return (
@@ -26,12 +27,10 @@ export function Home() {
           opción falla.
         </p>
 
-        <p className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-3">
-          <span>5 · 10 · 20 o todas</span>
-          <span aria-hidden="true">·</span>
-          <span>feedback inmediato</span>
-          <span aria-hidden="true">·</span>
-          <span>sin backend</span>
+        <p className="mt-7 max-w-xl">
+          <MetaLine
+            items={['5 · 10 · 20 o todas', 'feedback inmediato', 'sin backend']}
+          />
         </p>
       </header>
 
@@ -101,7 +100,7 @@ export function Home() {
           id="more-title"
           className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3"
         >
-          Próximamente
+          Además
         </h2>
 
         <div className="mt-3 grid gap-6 border-t border-rule pt-5 sm:grid-cols-2">
@@ -110,13 +109,13 @@ export function Home() {
               <span className="font-serif text-[17px] text-ink group-hover:text-accent">
                 Modo mixto
               </span>
-              <span className="rounded-sm border border-rule px-1.5 py-px font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
-                Fase 2
+              <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
+                disponible
               </span>
             </p>
             <p className="mt-1 text-[13px] leading-relaxed text-ink-2">
-              Combinar los tres temas en una sola sesión, con filtros por etiqueta y
-              atajo a las preguntas falladas.
+              Combiná los tres temas en una sesión, con filtros por etiqueta y orden
+              aleatorio.
             </p>
           </Link>
 

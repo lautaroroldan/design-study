@@ -1,4 +1,5 @@
 import type { Question, SessionConfig, SessionQuestion } from '../types';
+import { availableLangs } from './code';
 import { shuffle, type Rng } from './random';
 
 /**
@@ -30,8 +31,10 @@ export function filterQuestions(
       return false;
     }
 
-    if (config.lang !== 'both' && question.code && question.code.language !== config.lang) {
-      return false;
+    if (config.lang !== 'both') {
+      const langs = availableLangs(question);
+      // Las preguntas conceptuales no están atadas a un lenguaje.
+      if (langs.length > 0 && !langs.includes(config.lang)) return false;
     }
 
     return true;

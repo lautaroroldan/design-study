@@ -87,6 +87,32 @@ describe('filterQuestions', () => {
     expect(result.map((q) => q.id)).toEqual(['gof-2', 'solid-1']);
   });
 
+  it('el filtro de lenguaje mira también las variantes', () => {
+    const conVariantes = makeQuestion('gof-4', {
+      type: 'identify-pattern',
+      code: { language: 'java', source: 'class A {}' },
+      codeVariants: {
+        tsx: { language: 'tsx', source: 'const A = () => null;' },
+      },
+    });
+
+    expect(
+      filterQuestions([conVariantes], makeConfig({ lang: 'tsx' })).map((q) => q.id),
+    ).toEqual(['gof-4']);
+    expect(
+      filterQuestions([conVariantes], makeConfig({ lang: 'java' })).map((q) => q.id),
+    ).toEqual(['gof-4']);
+  });
+
+  it('descarta la pregunta si ninguna variante es del lenguaje pedido', () => {
+    const soloJava = makeQuestion('gof-5', {
+      type: 'identify-pattern',
+      code: { language: 'java', source: 'class A {}' },
+    });
+
+    expect(filterQuestions([soloJava], makeConfig({ lang: 'tsx' }))).toEqual([]);
+  });
+
   it('sin temas no devuelve nada', () => {
     expect(filterQuestions(bank, makeConfig({ topics: [] }))).toEqual([]);
   });

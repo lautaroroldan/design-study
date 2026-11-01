@@ -4,7 +4,7 @@ const navItems = [
   { to: '/gof', label: 'GoF' },
   { to: '/solid', label: 'SOLID' },
   { to: '/grasp', label: 'GRASP' },
-  { to: '/mixto', label: 'Mixto', badge: 'F2' },
+  { to: '/mixto', label: 'Mixto' },
   { to: '/progreso', label: 'Progreso', badge: 'F3' },
 ];
 
@@ -61,7 +61,7 @@ export function Layout() {
       <footer className="border-t border-rule">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-5 py-6 font-mono text-[11px] text-ink-3 sm:flex-row sm:items-center sm:justify-between">
           <p>Contenido local, sin backend ni cuentas.</p>
-          <p>Fase 1 · preguntas en Java</p>
+          <p>Fase 2 · Java y React</p>
         </div>
       </footer>
 

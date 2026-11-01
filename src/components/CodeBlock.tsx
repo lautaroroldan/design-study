@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import java from 'react-syntax-highlighter/dist/esm/languages/prism/java';
 import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
-import type { CodeSnippet } from '../types';
+import type { CodeSnippet, Lang } from '../types';
 import { LANG_LABELS } from '../lib/labels';
 
 SyntaxHighlighter.registerLanguage('java', java);
@@ -50,29 +50,65 @@ const theme: Record<string, CSSProperties> = {
 };
 
 interface CodeBlockProps {
-  code: CodeSnippet;
+  snippets: CodeSnippet[];
+  activeLang: Lang;
+  onLangChange?: (lang: Lang) => void;
   /** Antes de responder no se resaltan líneas: sería spoiler. */
   revealed: boolean;
 }
 
-export function CodeBlock({ code, revealed }: CodeBlockProps) {
-  const lineCount = code.source.split('\n').length;
-  const highlights = new Set(revealed ? (code.highlightLines ?? []) : []);
+export function CodeBlock({
+  snippets,
+  activeLang,
+  onLangChange,
+  revealed,
+}: CodeBlockProps) {
+  const active = snippets.find((snippet) => snippet.language === activeLang) ?? snippets[0];
+  const lineCount = active.source.split('\n').length;
+  const highlights = new Set(revealed ? (active.highlightLines ?? []) : []);
+  const switchable = snippets.length > 1 && onLangChange;
 
   return (
     <figure className="code-block overflow-hidden rounded-lg border border-rule bg-code">
-      <figcaption className="flex items-center justify-between border-b border-rule px-3.5 py-2">
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-3">
-          {LANG_LABELS[code.language]}
-        </span>
-        <span className="font-mono text-[10px] tabular text-ink-3">
-          {lineCount} líneas
-        </span>
+      <figcaption className="flex items-center justify-between gap-3 border-b border-rule px-3 py-2">
+        {switchable ? (
+          <div
+            role="group"
+            aria-label="Lenguaje del código"
+            className="flex gap-0.5 rounded-md border border-rule bg-inset p-0.5"
+          >
+            {snippets.map((snippet) => {
+              const isActive = snippet.language === active.language;
+
+              return (
+                <button
+                  key={snippet.language}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => onLangChange(snippet.language)}
+                  className={`min-h-7 rounded-[4px] px-2 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors duration-150 ${
+                    isActive
+                      ? 'bg-surface text-ink shadow-[0_0_0_1px_var(--rule)]'
+                      : 'text-ink-3 hover:text-ink'
+                  }`}
+                >
+                  {LANG_LABELS[snippet.language]}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-3">
+            {LANG_LABELS[active.language]}
+          </span>
+        )}
+
+        <span className="tabular font-mono text-[10px] text-ink-3">{lineCount} líneas</span>
       </figcaption>
 
       <div className="code-grid overflow-x-auto">
         <SyntaxHighlighter
-          language={code.language}
+          language={active.language}
           style={theme}
           showLineNumbers
           wrapLines
@@ -92,7 +128,7 @@ export function CodeBlock({ code, revealed }: CodeBlockProps) {
           }}
           codeTagProps={{ style: { fontFamily: 'var(--font-mono)' } }}
         >
-          {code.source}
+          {active.source}
         </SyntaxHighlighter>
       </div>
 

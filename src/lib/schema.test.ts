@@ -95,4 +95,61 @@ describe('parseQuestionFile', () => {
 
     expect(() => parseQuestionFile([broken], 'gof.ts')).toThrow(/difficulty|pregunta #1/);
   });
+
+  it('acepta una variante en otro lenguaje', () => {
+    const withVariant = {
+      ...validQuestion,
+      type: 'identify-pattern',
+      code: { language: 'java', source: 'class A {}', highlightLines: [1] },
+      codeVariants: {
+        tsx: { language: 'tsx', source: 'const A = () => null;' },
+      },
+    };
+
+    const [question] = parseQuestionFile([withVariant], 'gof.ts');
+    expect(Object.keys(question.codeVariants ?? {})).toEqual(['tsx']);
+  });
+
+  it('rechaza una variante cuyo language no coincide con la clave', () => {
+    const broken = {
+      ...validQuestion,
+      type: 'identify-pattern',
+      code: { language: 'java', source: 'class A {}' },
+      codeVariants: {
+        tsx: { language: 'java', source: 'class B {}' },
+      },
+    };
+
+    expect(() => parseQuestionFile([broken], 'gof.ts')).toThrow(
+      /debe coincidir con la clave/,
+    );
+  });
+
+  it('rechaza una variante que repite el lenguaje de code', () => {
+    const broken = {
+      ...validQuestion,
+      type: 'identify-pattern',
+      code: { language: 'java', source: 'class A {}' },
+      codeVariants: {
+        java: { language: 'java', source: 'class B {}' },
+      },
+    };
+
+    expect(() => parseQuestionFile([broken], 'gof.ts')).toThrow(/repite el lenguaje/);
+  });
+
+  it('valida las líneas resaltadas de cada variante', () => {
+    const broken = {
+      ...validQuestion,
+      type: 'identify-pattern',
+      code: { language: 'java', source: 'class A {}' },
+      codeVariants: {
+        tsx: { language: 'tsx', source: 'const A = 1;', highlightLines: [9] },
+      },
+    };
+
+    expect(() => parseQuestionFile([broken], 'gof.ts')).toThrow(
+      /codeVariants\.tsx\.highlightLines|fuera del snippet/,
+    );
+  });
 });

@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { allQuestions, TOPIC_META } from '../content';
+import { allQuestions, TOPIC_META, TOPICS } from '../content';
 import { scoreMessage, summarize } from '../lib/scoring';
 import { TOPIC_SHORT_LABELS } from '../lib/labels';
 import { useSessionStore } from '../store/session';
 import { Button } from '../components/Button';
-import { CodeBlock } from '../components/CodeBlock';
+import { CodeViewer } from '../components/CodeViewer';
 import { Meter } from '../components/Meter';
 import { optionLetter } from '../components/OptionList';
 
@@ -20,7 +20,9 @@ export function Results() {
   const summary = useMemo(() => summarize(answers, questions), [answers, questions]);
   const percent = Math.round(summary.accuracy * 100);
 
-  const topics = [...new Set(questions.map(({ question }) => question.topic))];
+  const topics = TOPICS.filter((topic) =>
+    questions.some(({ question }) => question.topic === topic),
+  );
   const topicLabel = topics.map((topic) => TOPIC_SHORT_LABELS[topic]).join(' · ');
 
   function handleRepeatMistakes() {
@@ -232,7 +234,7 @@ export function Results() {
                         Ver el código
                       </summary>
                       <div className="mt-2">
-                        <CodeBlock code={question.code} revealed />
+                        <CodeViewer question={question} revealed />
                       </div>
                     </details>
                   ) : null}
@@ -272,7 +274,13 @@ export function Results() {
             size="lg"
             onClick={() => {
               reset();
-              const firstTopic = config?.topics[0];
+              const topics = config?.topics ?? [];
+              if (topics.length > 1) {
+                navigate('/mixto');
+                return;
+              }
+
+              const firstTopic = topics[0];
               navigate(firstTopic ? `/${TOPIC_META[firstTopic].slug}` : '/');
             }}
             className="sm:flex-1"

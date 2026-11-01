@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, type ReactNode } from 'react';
 import type { QuestionType, SessionConfig } from '../types';
 import { QUESTION_TYPE_LABELS } from '../lib/labels';
 import { SegmentedControl } from './SegmentedControl';
@@ -14,6 +14,8 @@ interface SessionConfigPanelProps {
   activeTag?: string | null;
   onClearTag?: () => void;
   startLabel?: string;
+  /** Selectores propios de la página (temas y etiquetas del modo mixto). */
+  children?: ReactNode;
 }
 
 export const QUESTION_TYPE_ORDER: QuestionType[] = [
@@ -32,6 +34,7 @@ export function SessionConfigPanel({
   activeTag,
   onClearTag,
   startLabel = 'Empezar',
+  children,
 }: SessionConfigPanelProps) {
   const typeId = useId();
   const canStart = available > 0;
@@ -49,6 +52,8 @@ export function SessionConfigPanel({
           {available} disp.
         </span>
       </div>
+
+      {children ? <div className="mt-5">{children}</div> : null}
 
       <div className="mt-5 space-y-5">
         <SegmentedControl
@@ -107,12 +112,7 @@ export function SessionConfigPanel({
           options={[
             { value: 'both', label: 'Ambos' },
             { value: 'java', label: 'Java' },
-            {
-              value: 'tsx',
-              label: 'React',
-              disabled: true,
-              title: 'El contenido React llega en la Fase 2',
-            },
+            { value: 'tsx', label: 'React' },
           ]}
           hint="Las preguntas conceptuales no dependen del lenguaje."
         />

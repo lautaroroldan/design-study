@@ -23,6 +23,29 @@ const codeSchema = z.object({
   highlightLines: z.array(z.number().int().positive()).min(1).optional(),
 });
 
+type SnippetIssueContext = z.RefinementCtx;
+type SnippetPath = (string | number)[];
+
+/** Valida cantidades y rangos de un snippet; se usa para `code` y sus variantes. */
+function checkSnippet(
+  snippet: { source: string; highlightLines?: number[] },
+  path: SnippetPath,
+  ctx: SnippetIssueContext,
+) {
+  if (!snippet.highlightLines) return;
+
+  const lineCount = snippet.source.split('\n').length;
+  const outOfRange = snippet.highlightLines.filter((line) => line > lineCount);
+
+  if (outOfRange.length > 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [...path, 'highlightLines'],
+      message: `hay líneas resaltadas fuera del snippet (${lineCount} líneas): ${outOfRange.join(', ')}`,
+    });
+  }
+}
+
 export const questionSchema = z
   .object({
     id: z.string().min(1),
@@ -32,6 +55,7 @@ export const questionSchema = z
     difficulty: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     prompt: z.string().min(1),
     code: codeSchema.optional(),
+    codeVariants: z.record(langSchema, codeSchema).optional(),
     options: z.array(optionSchema).length(4, 'debe tener exactamente 4 opciones'),
     correctOptionId: z.string().min(1),
     explanation: z.string().min(1),
@@ -78,16 +102,40 @@ export const questionSchema = z
       });
     }
 
-    if (question.code?.highlightLines) {
-      const lineCount = question.code.source.split('\n').length;
-      const outOfRange = question.code.highlightLines.filter(
-        (line) => line > lineCount,
-      );
-      if (outOfRange.length > 0) {
+    if (question.code) {
+      checkSnippet(question.code, ['code'], ctx);
+    }
+
+    if (question.codeVariants) {
+      const variantLangs = Object.keys(question.codeVariants);
+
+      if (variantLangs.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ['code', 'highlightLines'],
-          message: `hay líneas resaltadas fuera del snippet (${lineCount} líneas): ${outOfRange.join(', ')}`,
+          path: ['codeVariants'],
+          message: 'si existe codeVariants, debe tener al menos una variante',
+        });
+      }
+
+      for (const [lang, snippet] of Object.entries(question.codeVariants)) {
+        if (!snippet) continue;
+
+        if (snippet.language !== lang) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['codeVariants', lang, 'language'],
+            message: `el lenguaje del snippet debe coincidir con la clave "${lang}"`,
+          });
+        }
+
+        checkSnippet(snippet, ['codeVariants', lang], ctx);
+      }
+
+      if (question.code && question.codeVariants[question.code.language]) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['codeVariants', question.code.language],
+          message: `repite el lenguaje de "code" (${question.code.language}); usá una clave distinta`,
         });
       }
     }
