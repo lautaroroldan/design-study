@@ -8,6 +8,30 @@
       content="Practicá Patrones GoF, Principios SOLID y Patrones GRASP con preguntas de opción múltiple y código Java y React."
     />
     <title>Design Study · GoF, SOLID y GRASP</title>
+    <script>
+      // Aplica el tema guardado antes del primer paint para evitar el flash.
+      (function () {
+        var preference = null;
+        try {
+          preference = localStorage.getItem('design-study:theme');
+        } catch (error) {
+          preference = null;
+        }
+
+        var dark;
+        if (preference === 'dark') {
+          dark = true;
+        } else if (preference === 'light') {
+          dark = false;
+        } else {
+          dark =
+            typeof window.matchMedia === 'function' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+
+        document.documentElement.classList.toggle('dark', dark);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -6,6 +6,7 @@ import type {
   SessionQuestion,
 } from '../types';
 import { buildSession } from '../lib/session';
+import { useProgressStore } from './progress';
 
 type SessionStatus = 'idle' | 'active' | 'finished';
 
@@ -50,13 +51,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     if (status !== 'active' || !current) return;
     if (answers.length > currentIndex) return;
 
+    const correct = optionId === current.question.correctOptionId;
+
+    // El progreso se guarda al responder, una sola vez por pregunta y sesión.
+    useProgressStore.getState().record(current.question.id, correct);
+
     set({
       answers: [
         ...answers,
         {
           questionId: current.question.id,
           selectedOptionId: optionId,
-          correct: optionId === current.question.correctOptionId,
+          correct,
         },
       ],
     });

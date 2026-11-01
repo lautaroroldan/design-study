@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSessionStore } from '../store/session';
 import { QuestionCard } from '../components/QuestionCard';
 import { Meter } from '../components/Meter';
 import { ArrowLeftIcon } from '../components/icons';
+import { isInteractiveTarget, shortcutFor } from '../lib/shortcuts';
 import { Results } from './Results';
 
 export function Session() {
@@ -15,13 +17,52 @@ export function Session() {
   const reset = useSessionStore((state) => state.reset);
   const config = useSessionStore((state) => state.config);
 
+  const current = questions[currentIndex];
   const defaultLang = config && config.lang !== 'both' ? config.lang : undefined;
+  const [hintQuestionId, setHintQuestionId] = useState<string | null>(null);
+
+  // Atajos de teclado: 1–4 eligen, Enter avanza, H muestra la pista.
+  useEffect(() => {
+    if (!current || status !== 'active') return;
+
+    const question = current;
+    const revealed = answers.length > currentIndex;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      const action = shortcutFor(event.key, {
+        revealed,
+        optionCount: question.options.length,
+        hasHint: Boolean(question.question.hint),
+        interactiveTarget: isInteractiveTarget(event.target),
+      });
+
+      if (action.type === 'none') return;
+      event.preventDefault();
+
+      if (action.type === 'select') {
+        answer(question.options[action.index].id);
+        return;
+      }
+
+      if (action.type === 'next') {
+        next();
+        return;
+      }
+
+      setHintQuestionId((previous) =>
+        previous === question.question.id ? null : question.question.id,
+      );
+    }
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [answer, next, answers.length, currentIndex, current, status]);
 
   if (status === 'finished') {
     return <Results />;
   }
-
-  const current = questions[currentIndex];
 
   if (status === 'idle' || !current) {
     return (
@@ -50,6 +91,7 @@ export function Session() {
   const selectedOptionId = answers[currentIndex]?.selectedOptionId ?? null;
   const revealed = answers.length > currentIndex;
   const isLast = currentIndex + 1 === questions.length;
+  const hintVisible = hintQuestionId === current.question.id;
 
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-6 sm:py-10">
@@ -88,11 +130,19 @@ export function Session() {
           onSelect={answer}
           onNext={next}
           defaultLang={defaultLang}
+          hintVisible={hintVisible}
+          onToggleHint={() =>
+            setHintQuestionId(hintVisible ? null : current.question.id)
+          }
         />
       </div>
 
       <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3">
-        {revealed ? 'Leé la explicación y continuá' : 'Elegí una opción para responder'}
+        {revealed
+          ? 'Enter para seguir'
+          : current.question.hint
+            ? '1–4 para elegir · H para pista'
+            : '1–4 para elegir una opción'}
       </p>
     </main>
   );

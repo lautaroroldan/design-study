@@ -88,6 +88,7 @@ class ReporteTotales {
       c: 'El servicio de email notifica; no participa de la composición del pedido.',
       d: 'El logger no tiene relación con la estructura del dominio.',
     },
+    hint: '¿Quién contiene y controla el ciclo de vida de esas líneas?',
   },
   {
     id: 'grasp-controller-001',
@@ -111,6 +112,7 @@ class ReporteTotales {
       c: 'Indirection interpone un intermediario para desacoplar; no describe el punto de entrada de la UI.',
       d: 'Polymorphism reemplaza condicionales por tipos, no organiza la entrada del sistema.',
     },
+    hint: '¿Quién debería recibir el evento que viene de la interfaz?',
   },
   {
     id: 'grasp-low-coupling-001',
@@ -184,6 +186,7 @@ class ReporteTotales {
       c: 'No hay condicionales por tipo que reemplazar por polimorfismo.',
       d: 'Information Expert asignaría responsabilidades según los datos; acá el problema es que no comparten tema.',
     },
+    hint: '¿Todas esas tareas comparten un mismo tema?',
   },
   {
     id: 'grasp-polymorphism-001',
@@ -207,6 +210,7 @@ class ReporteTotales {
       c: 'Indirection interpone un intermediario, no reemplaza condicionales.',
       d: 'Controller coordina casos de uso, no elimina switches de dominio.',
     },
+    hint: '¿Qué mecanismo reemplaza el switch por tipo de pago?',
   },
   {
     id: 'grasp-pure-fabrication-001',
@@ -230,6 +234,7 @@ class ReporteTotales {
       b: 'Creator asignaría la creación a quien contiene o usa los objetos.',
       d: 'Protected Variations protege ante una variación futura, pero el criterio de diseño acá es la clase inventada.',
     },
+    hint: '¿Ese concepto existe en el negocio o es una clase inventada?',
   },
   {
     id: 'grasp-indirection-001',
@@ -277,6 +282,7 @@ class ReporteTotales {
       c: 'Pure Fabrication justifica inventar una clase; acá el criterio es proteger un punto de variación.',
       d: 'Polymorphism es el mecanismo que se usa para lograrlo, pero el patrón que nombra el criterio de diseño es Protected Variations.',
     },
+    hint: '¿Qué punto de variación futura se está aislando?',
   },
   {
     id: 'grasp-controller-002',

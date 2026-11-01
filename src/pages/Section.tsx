@@ -8,6 +8,8 @@ import {
   tagsForTopic,
 } from '../content';
 import { countAvailable } from '../lib/session';
+import { byTag } from '../lib/progress';
+import { useProgressStore } from '../store/progress';
 import { useSessionStore } from '../store/session';
 import {
   QUESTION_TYPE_ORDER,
@@ -42,6 +44,12 @@ export function Section({ topic }: SectionProps) {
 
   const start = useSessionStore((state) => state.start);
   const navigate = useNavigate();
+  const progress = useProgressStore((state) => state.questions);
+
+  const tagStats = useMemo(
+    () => new Map(byTag(questions, progress).map((row) => [row.key, row])),
+    [questions, progress],
+  );
 
   const available = countAvailable(allQuestions, config);
   const activeTag = config.tags?.[0] ?? null;
@@ -97,7 +105,8 @@ export function Section({ topic }: SectionProps) {
             `${tags.length} etiquetas`,
             'snippets en Java y React',
           ]}
-        />      </header>
+        />
+      </header>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_370px] lg:gap-12">
         <section aria-labelledby="tags-title" className="order-last lg:order-none">
@@ -124,6 +133,8 @@ export function Section({ topic }: SectionProps) {
           <ul className="mt-4 grid gap-2 sm:grid-cols-2">
             {tags.map(({ tag, total }) => {
               const selected = activeTag === tag;
+              const stat = tagStats.get(tag);
+              const practiced = (stat?.attempts ?? 0) > 0;
 
               return (
                 <li key={tag}>
@@ -143,9 +154,20 @@ export function Section({ topic }: SectionProps) {
                       ) : null}
                       <span className="truncate text-[13.5px] text-ink">{tag}</span>
                     </span>
-                    <span className="tabular shrink-0 font-mono text-[10px] text-ink-3">
-                      {total} preg.
-                    </span>
+                    {stat && practiced ? (
+                      <span
+                        className={`tabular shrink-0 font-mono text-[10px] ${
+                          stat.accuracy >= 0.6 ? 'text-good' : 'text-bad'
+                        }`}
+                        title={`${stat.correct} de ${stat.attempts} intentos`}
+                      >
+                        {Math.round(stat.accuracy * 100)}%
+                      </span>
+                    ) : (
+                      <span className="tabular shrink-0 font-mono text-[10px] text-ink-3">
+                        {total} preg.
+                      </span>
+                    )}
                   </button>
                 </li>
               );
@@ -153,7 +175,7 @@ export function Section({ topic }: SectionProps) {
           </ul>
 
           <p className="mt-4 text-[12px] leading-relaxed text-ink-3">
-            El porcentaje de aciertos por etiqueta llega con el progreso (Fase 3).
+            El porcentaje aparece cuando ya practicaste esa etiqueta.
           </p>
         </section>
 

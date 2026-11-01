@@ -7,7 +7,7 @@ import {
 import { CodeViewer } from './CodeViewer';
 import { OptionList, optionLetter } from './OptionList';
 import { Button } from './Button';
-import { ArrowRightIcon, CheckIcon, CrossIcon } from './icons';
+import { ArrowRightIcon, CheckIcon, CrossIcon, LightbulbIcon } from './icons';
 
 interface QuestionCardProps {
   item: SessionQuestion;
@@ -20,6 +20,8 @@ interface QuestionCardProps {
   onNext: () => void;
   /** Lenguaje por defecto según el filtro de la sesión. */
   defaultLang?: Lang;
+  hintVisible?: boolean;
+  onToggleHint?: () => void;
 }
 
 function DifficultyDots({ level }: { level: 1 | 2 | 3 }) {
@@ -49,6 +51,8 @@ export function QuestionCard({
   onSelect,
   onNext,
   defaultLang,
+  hintVisible = false,
+  onToggleHint,
 }: QuestionCardProps) {
   const { question, options } = item;
   const isCorrect = selectedOptionId === question.correctOptionId;
@@ -97,6 +101,29 @@ export function QuestionCard({
       {question.code ? (
         <div className="mt-4">
           <CodeViewer question={question} defaultLang={defaultLang} revealed={revealed} />
+        </div>
+      ) : null}
+
+      {question.hint && !revealed ? (
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={onToggleHint}
+            aria-expanded={hintVisible}
+            className="inline-flex min-h-9 items-center gap-2 rounded-md border border-rule bg-inset/60 px-3 text-[12.5px] text-ink-2 transition-colors duration-150 hover:text-ink"
+          >
+            <LightbulbIcon className="h-4 w-4 text-mustard" />
+            {hintVisible ? 'Ocultar pista' : 'Ver pista'}
+            <kbd className="rounded border border-rule bg-surface px-1 font-mono text-[10px] text-ink-3">
+              H
+            </kbd>
+          </button>
+
+          {hintVisible ? (
+            <p className="fade-up mt-2 border-l-2 border-mustard bg-mustard-soft/60 px-3 py-2 text-[13px] leading-relaxed text-ink-2">
+              {question.hint}
+            </p>
+          ) : null}
         </div>
       ) : null}
 

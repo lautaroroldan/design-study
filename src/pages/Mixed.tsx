@@ -9,12 +9,15 @@ import {
   tagsForTopic,
 } from '../content';
 import { countAvailable } from '../lib/session';
+import { failedQuestions } from '../lib/progress';
+import { useProgressStore } from '../store/progress';
 import { useSessionStore } from '../store/session';
 import {
   QUESTION_TYPE_ORDER,
   SessionConfigPanel,
 } from '../components/SessionConfigPanel';
-import { ArrowLeftIcon, CheckIcon } from '../components/icons';
+import { Button } from '../components/Button';
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon } from '../components/icons';
 import { MetaLine } from '../components/MetaLine';
 
 export function Mixed() {
@@ -30,9 +33,13 @@ export function Mixed() {
 
   const start = useSessionStore((state) => state.start);
   const navigate = useNavigate();
+  const progress = useProgressStore((state) => state.questions);
 
   const available = countAvailable(allQuestions, config);
   const selectedTags = config.tags ?? [];
+  const failedInTopics = failedQuestions(allQuestions, progress).filter((question) =>
+    config.topics.includes(question.topic),
+  );
 
   const types = useMemo(
     () =>
@@ -87,6 +94,30 @@ export function Mixed() {
     if (start(config, allQuestions) > 0) {
       navigate('/sesion');
     }
+  }
+
+  function startFailed() {
+    if (failedInTopics.length === 0) return;
+
+    const topics = TOPICS.filter((topic) =>
+      failedInTopics.some((question) => question.topic === topic),
+    );
+
+    const created = start(
+      {
+        topics,
+        tags: [],
+        questionIds: failedInTopics.map((question) => question.id),
+        count: 'all',
+        type: 'all',
+        lang: 'both',
+        difficulty: 'all',
+        order: 'random',
+      },
+      allQuestions,
+    );
+
+    if (created > 0) navigate('/sesion');
   }
 
   return (
@@ -179,17 +210,28 @@ export function Mixed() {
             </div>
           )}
 
-          <div className="mt-8 rounded-lg border border-dashed border-rule-strong px-4 py-3">
+          <div className="mt-8 rounded-lg border border-rule bg-surface px-4 py-4">
             <p className="flex items-baseline justify-between gap-3">
               <span className="text-[13px] font-medium text-ink">Solo las que fallé</span>
-              <span className="rounded-sm border border-rule px-1.5 py-px font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
-                Fase 3
+              <span className="tabular font-mono text-[11px] text-ink-3">
+                {failedInTopics.length}
               </span>
             </p>
             <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">
-              Arma la sesión con las preguntas que respondiste mal. Se habilita
-              cuando el progreso se guarde en el navegador.
+              {failedInTopics.length > 0
+                ? 'Arma la sesión con las preguntas que fallaste en el último intento, dentro de los temas elegidos.'
+                : 'Todavía no hay preguntas falladas con estos temas. Aparecen acá a medida que practicás.'}
             </p>
+
+            <Button
+              variant="secondary"
+              className="mt-3 w-full"
+              onClick={startFailed}
+              disabled={failedInTopics.length === 0}
+            >
+              Practicar las falladas
+              <ArrowRightIcon className="h-4 w-4" />
+            </Button>
           </div>
 
           <p className="mt-6 text-[12px] leading-relaxed text-ink-3">

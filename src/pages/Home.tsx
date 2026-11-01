@@ -124,13 +124,13 @@ export function Home() {
               <span className="font-serif text-[17px] text-ink group-hover:text-accent">
                 Mi progreso
               </span>
-              <span className="rounded-sm border border-rule px-1.5 py-px font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
-                Fase 3
+              <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
+                disponible
               </span>
             </p>
             <p className="mt-1 text-[13px] leading-relaxed text-ink-2">
-              Aciertos por tema y etiqueta, guardados en el navegador, más las
-              etiquetas más débiles.
+              Aciertos por tema y etiqueta, las más débiles y las preguntas que
+              quedaron pendientes. Se guarda en este navegador.
             </p>
           </Link>
         </div>

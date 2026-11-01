@@ -10,7 +10,9 @@ que sigue pendiente, separado por fase.
 - **Fase 2** implementada: modo mixto con filtros, tipos `identify-pattern` y
   `choose-fix`, código en React y selector de lenguaje por pregunta. Total: 47
   preguntas (19 GoF, 14 SOLID, 14 GRASP).
-- `/progreso` sigue como pantalla marcador de posición (Fase 3).
+- **Fase 3** implementada: progreso persistido en `localStorage`, página
+  `/progreso`, «solo las que fallé», atajos de teclado, pistas y tema
+  claro/oscuro con preferencia guardada.
 
 ## Corrección de la Fase 1
 
@@ -109,9 +111,54 @@ que sigue pendiente, separado por fase.
 - **Etiquetas mostradas según el contenido**, no la lista completa del README:
   mostrar etiquetas con 0 preguntas habría sido ruido.
 
+## Progreso (Fase 3)
+
+- **Se guarda en `localStorage` con la clave `design-study:progress`**, vía
+  `zustand/persist` con `version: 1`. No hay backend ni cuentas, como pide la
+  spec.
+- **El intento se registra al responder, no al armar la sesión**, y una sola vez
+  por pregunta y sesión (el store ya bloquea re-responder). Reprobar una pregunta
+  en otra sesión suma intento.
+- **"Fallada" = el último intento fue incorrecto.** No es un historial de errores:
+  si después la acertás, sale de la lista. Es lo que uno quiere repasar.
+- **Las estadísticas son derivadas**, no se guardan duplicadas: se calculan
+  cruzando el contenido con el mapa de intentos. Si mañana se agrega o se quita
+  una pregunta, los totales no quedan desfasados.
+- **Las etiquetas sin intentos no son "débiles"**, son desconocidas: no entran en
+  el top 5 de `/progreso` hasta que las practiques.
+- **Reiniciar pide confirmación en línea** (dos botones), no un `window.confirm`
+  nativo: se estiliza, se navega con teclado y no bloquea el hilo.
+- **El porcentaje por etiqueta en las secciones** reemplaza al conteo cuando hay
+  intentos; el conteo vuelve a aparecer si todavía no practicaste nada.
+
+## Atajos y pistas
+
+- **`1`–`4` eligen opción, `Enter` avanza, `H` muestra/oculta la pista.** La
+  lógica vive en `lib/shortcuts.ts` como función pura (`shortcutFor`) para poder
+  testearla sin montar la página.
+- **Los atajos se ignoran si el foco está en un control** (input, select, button,
+  link, contenteditable): así `Enter` sigue activando el botón enfocado y no se
+  disparan dos acciones.
+- **Después de responder, el foco pasa al botón "Siguiente"** (autoFocus), así
+  `Enter` funciona también de forma nativa.
+- **Todas las preguntas tienen pista** (hay un test que lo exige). La pista no
+  revela la respuesta: apunta a dónde mirar.
+- **La pista se oculta al responder** y al cambiar de pregunta.
+
+## Tema claro/oscuro
+
+- **Tres estados: Auto, Claro y Oscuro**, persistidos en
+  `design-study:theme`. El botón del encabezado los cicla.
+- **El tema se aplica con la clase `.dark` en `<html>`**, y `index.html` incluye
+  un script mínimo que la setea antes del primer paint: sin flash blanco al
+  cargar en oscuro.
+- **En "Auto" se sigue al sistema en vivo** (`matchMedia`), no solo al cargar.
+- **Los tokens de color siguen siendo variables CSS**; no hay clases `dark:` en
+  los componentes. Un solo lugar define ambos temas.
+
 ## Tests
 
-66 tests con Vitest:
+103 tests con Vitest:
 
 - `lib/session.test.ts`: filtros (tema, etiqueta, tipo, dificultad, ids,
   lenguaje con variantes), orden fijo/aleatorio determinístico, recorte, mezcla
@@ -120,34 +167,37 @@ que sigue pendiente, separado por fase.
   preferencia de lenguaje.
 - `lib/scoring.test.ts`: puntaje, accuracy, desglose por tema/etiqueta, orden de
   etiquetas de peor a mejor, errores, casos vacíos.
+- `lib/progress.test.ts`: agregados por pregunta/tema/etiqueta, top de débiles,
+  falladas por último intento, resumen global, casos vacíos.
+- `lib/theme.test.ts`: resolución de Auto/Claro/Oscuro, persistencia, ciclo del
+  botón y clase en el documento.
+- `lib/shortcuts.test.ts`: teclas válidas, teclas ignoradas y foco en controles.
 - `lib/schema.test.ts`: contenido inválido (opciones, correcta inexistente, ids
   repetidos, falta de código, highlights fuera de rango, variantes mal declaradas).
 - `content/content.test.ts`: cobertura por tema, 4 opciones, explicación de cada
-  distractor, snippets ≤ 25 líneas (variantes incluidas), los 4 tipos existen,
-  hay Java y React.
+  distractor, pista en todas, snippets ≤ 25 líneas (variantes incluidas), los 4
+  tipos existen, hay Java y React.
+- `store/session.test.ts`: registro de intentos correctos/incorrectos, sin
+  duplicados en la misma sesión, acumulación entre sesiones y avance.
 - `components/QuestionCard.test.tsx`: opciones, feedback, etiqueta oculta hasta
-  responder, callbacks.
+  responder, pista, callbacks.
 
 ## Pendiente
 
-### Fase 3
-- Persistencia de progreso en `localStorage` (por pregunta, etiqueta y tema).
-- Página `/progreso` con las 5 etiquetas más débiles y reinicio con confirmación.
-- «Solo las que fallé» en el modo mixto.
-- Atajos `1`–`4`, `Enter` y `H` (pista).
-- Toggle manual de tema claro/oscuro.
-- Porcentaje de aciertos por etiqueta en las páginas de sección.
-
-### Fase 4
-- Exportar/importar progreso, modo examen con temporizador, más preguntas por
-  etiqueta hasta cumplir la tabla completa de la sección 9.
+### Fase 4 (opcional)
+- Exportar e importar el progreso como JSON.
+- Modo examen con temporizador.
+- Más preguntas por etiqueta hasta cumplir la tabla completa de la sección 9.
+- Ranking o cuentas: sigue fuera de alcance.
 
 ### Deuda técnica conocida
-- La app no persiste la sesión en curso; recargar la pierde.
-- El bundle incluye Prism para `java` y `tsx` (~125 kB gzip total); si crece, se
+- La app no persiste la sesión en curso; recargar la pierde (el progreso sí queda).
+- El bundle incluye Prism para `java` y `tsx` (~133 kB gzip total); si crece, se
   puede dividir por ruta.
 - No hay tests end-to-end; los flujos se verificaron a mano en el navegador
   (desktop y 390 px, claro y oscuro).
 - Las preguntas con dos variantes comparten un solo `prompt`: está redactado de
   forma neutral ("este código"). Si una variante necesitara otro enunciado, hay
   que duplicar la pregunta.
+- El progreso no se sincroniza entre dispositivos (decisión de la spec: sin
+  backend). Exportar/importar JSON es Fase 4.

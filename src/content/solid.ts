@@ -75,6 +75,7 @@ export const solidQuestions = [
       c: 'ISP habla de interfaces o props que el consumidor no usa.',
       d: 'DIP sería el problema si el componente importara el cliente HTTP concreto en vez de recibirlo por props o Context.',
     },
+    hint: 'Pensá cuántos motivos distintos harían cambiar ese componente.',
   },
   {
     id: 'solid-ocp-001',
@@ -136,6 +137,7 @@ export const solidQuestions = [
       c: 'DIP ayuda a depender de abstracciones, pero el criterio pedido es explícitamente "extender sin modificar".',
       d: 'LSP aplica a jerarquías existentes, no a la extensión de funcionalidad.',
     },
+    hint: 'La idea es agregar sin editar lo que ya funciona y pasa sus tests.',
   },
   {
     id: 'solid-lsp-001',
@@ -200,6 +202,7 @@ void migrar(List<Ave> aves) {
       b: 'OCP no aplica: el problema no es agregar funcionalidad, sino respetar lo que la base promete.',
       d: 'No hay interfaces gordas ni consumidores obligados a métodos que no usan.',
     },
+    hint: 'Compará lo que promete la clase base con lo que hace la subclase.',
   },
   {
     id: 'solid-isp-001',
@@ -261,6 +264,7 @@ class Robot implements Trabajador {
       c: 'No hay herencia ni sustitución involucrada.',
       d: 'El componente puede tener una sola responsabilidad y aun así recibir props de más.',
     },
+    hint: 'Mirá cuántas props recibe y cuántas usa de verdad.',
   },
   {
     id: 'solid-dip-001',
@@ -331,6 +335,7 @@ export function BotonRegistrar({ usuario }: { usuario: Usuario }) {
       c: 'La responsabilidad del caso de uso puede estar bien delimitada; lo que está mal es la dirección de la dependencia.',
       d: 'OCP también se resiente, pero el criterio que describe el problema es depender de una abstracción y no de un detalle.',
     },
+    hint: '¿Quién debería decidir qué implementación concreta se usa?',
   },
   {
     id: 'solid-srp-003',

@@ -10,13 +10,14 @@ Las decisiones tomadas donde la spec no definía nada están en
 
 ## Estado
 
-**Fases 1 y 2 implementadas.** 47 preguntas (19 GoF, 14 SOLID, 14 GRASP), los
+**Fases 1, 2 y 3 implementadas.** 47 preguntas (19 GoF, 14 SOLID, 14 GRASP), los
 cuatro tipos de ejercicio (`concept`, `identify-pattern`, `find-violation`,
 `choose-fix`), código en Java y React con selector de lenguaje, modo mixto con
-filtros por tema y etiqueta, y resaltado de líneas al responder.
+filtros por tema y etiqueta, progreso persistido en el navegador, página
+`/progreso`, «solo las que fallé», atajos de teclado, pistas y tema claro/oscuro.
 
-El progreso en `localStorage` y la página `/progreso` son Fase 3 y están como
-pantalla marcador de posición.
+Queda la Fase 4 opcional: exportar/importar progreso, modo examen y más
+contenido por etiqueta.
 
 ## Correr el proyecto
 
@@ -41,11 +42,21 @@ src/
 ├── content/        # gof.ts, solid.ts, grasp.ts + índice con validación y metadatos
 ├── components/     # QuestionCard, CodeViewer, CodeBlock, OptionList, SessionConfigPanel...
 ├── pages/          # Home, Section, Mixed, Session, Results, Progress, NotFound
-├── store/          # estado de la sesión en curso (Zustand)
-├── lib/            # sesiones, scoring, esquema Zod, snippets, azar, etiquetas
+├── store/          # sesión en curso y progreso (Zustand + localStorage)
+├── lib/            # sesiones, scoring, progreso, tema, atajos, esquema Zod, snippets, azar
 ├── test/           # setup de Vitest
 └── types.ts
 ```
+
+## Atajos de teclado (sesión)
+
+| Tecla | Acción |
+| --- | --- |
+| `1`–`4` | Elegir opción |
+| `Enter` | Pasar a la siguiente pregunta (después de responder) |
+| `H` | Mostrar u ocultar la pista |
+
+Se ignoran cuando el foco está en un control, para no romper `Enter` sobre un botón.
 
 ## Cómo agregar preguntas
 

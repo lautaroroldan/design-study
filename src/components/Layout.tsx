@@ -1,11 +1,12 @@
 import { NavLink, Outlet, ScrollRestoration } from 'react-router-dom';
+import { ThemeToggle } from './ThemeToggle';
 
 const navItems = [
   { to: '/gof', label: 'GoF' },
   { to: '/solid', label: 'SOLID' },
   { to: '/grasp', label: 'GRASP' },
   { to: '/mixto', label: 'Mixto' },
-  { to: '/progreso', label: 'Progreso', badge: 'F3' },
+  { to: '/progreso', label: 'Progreso' },
 ];
 
 export function Layout() {
@@ -26,31 +27,33 @@ export function Layout() {
             </span>
           </NavLink>
 
-          <nav aria-label="Secciones" className="-mx-1 overflow-x-auto">
-            <ul className="flex items-center gap-1">
-              {navItems.map((item) => (
-                <li key={item.to}>
-                  <NavLink
-                    to={item.to}
-                    className={({ isActive }) =>
-                      `flex min-h-9 items-center gap-1.5 rounded-md px-2.5 text-[13px] transition-colors duration-150 ${
-                        isActive
-                          ? 'bg-inset font-medium text-ink'
-                          : 'text-ink-3 hover:bg-inset hover:text-ink'
-                      }`
-                    }
-                  >
-                    {item.label}
-                    {item.badge ? (
-                      <span className="rounded-sm border border-rule px-1 py-px font-mono text-[9px] leading-none tracking-wide text-ink-3">
-                        {item.badge}
-                      </span>
-                    ) : null}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-4">
+            <nav
+              aria-label="Secciones"
+              className="-mx-1 min-w-0 flex-1 overflow-x-auto sm:flex-none"
+            >
+              <ul className="flex items-center gap-1">
+                {navItems.map((item) => (
+                  <li key={item.to}>
+                    <NavLink
+                      to={item.to}
+                      className={({ isActive }) =>
+                        `flex min-h-9 items-center gap-1.5 rounded-md px-2.5 text-[13px] transition-colors duration-150 ${
+                          isActive
+                            ? 'bg-inset font-medium text-ink'
+                            : 'text-ink-3 hover:bg-inset hover:text-ink'
+                        }`
+                      }
+                    >
+                      {item.label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -61,7 +64,7 @@ export function Layout() {
       <footer className="border-t border-rule">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-5 py-6 font-mono text-[11px] text-ink-3 sm:flex-row sm:items-center sm:justify-between">
           <p>Contenido local, sin backend ni cuentas.</p>
-          <p>Fase 2 · Java y React</p>
+          <p>Progreso guardado en tu navegador.</p>
         </div>
       </footer>
 

@@ -105,3 +105,51 @@ describe('QuestionCard', () => {
     expect(props.onNext).toHaveBeenCalledOnce();
   });
 });
+
+describe('QuestionCard con pista', () => {
+  const withHint: SessionQuestion = {
+    ...item,
+    question: { ...item.question, hint: 'Mirá el contrato de la interfaz.' },
+  };
+
+  function renderWithHint(overrides: Partial<Parameters<typeof QuestionCard>[0]> = {}) {
+    const props = {
+      item: withHint,
+      index: 0,
+      total: 1,
+      selectedOptionId: null,
+      revealed: false,
+      isLast: false,
+      onSelect: vi.fn(),
+      onNext: vi.fn(),
+      hintVisible: false,
+      onToggleHint: vi.fn(),
+      ...overrides,
+    };
+
+    render(<QuestionCard {...props} />);
+    return props;
+  }
+
+  it('ofrece ver la pista antes de responder', async () => {
+    const user = userEvent.setup();
+    const props = renderWithHint();
+
+    await user.click(screen.getByRole('button', { name: /Ver pista/i }));
+    expect(props.onToggleHint).toHaveBeenCalledOnce();
+    expect(screen.queryByText('Mirá el contrato de la interfaz.')).not.toBeInTheDocument();
+  });
+
+  it('muestra el texto cuando la pista está visible', () => {
+    renderWithHint({ hintVisible: true });
+
+    expect(screen.getByText('Mirá el contrato de la interfaz.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ocultar pista/i })).toBeInTheDocument();
+  });
+
+  it('no ofrece pista después de responder', () => {
+    renderWithHint({ revealed: true, selectedOptionId: 'b' });
+
+    expect(screen.queryByRole('button', { name: /pista/i })).not.toBeInTheDocument();
+  });
+});

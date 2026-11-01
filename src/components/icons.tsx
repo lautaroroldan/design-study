@@ -53,3 +53,30 @@ export function LightbulbIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function SunIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="10" cy="10" r="3.4" />
+      <path d="M10 1.8v1.6M10 16.6v1.6M1.8 10h1.6M16.6 10h1.6M4.2 4.2l1.1 1.1M14.7 14.7l1.1 1.1M15.8 4.2l-1.1 1.1M5.3 14.7l-1.1 1.1" />
+    </svg>
+  );
+}
+
+export function MoonIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M16 12.2A6.5 6.5 0 0 1 7.8 4 6.5 6.5 0 1 0 16 12.2Z" />
+    </svg>
+  );
+}
+
+export function AutoThemeIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="10" cy="10" r="6.5" />
+      <path d="M10 3.5v13" />
+      <path d="M10 3.5a6.5 6.5 0 0 1 0 13Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}

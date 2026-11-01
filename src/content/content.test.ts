@@ -108,6 +108,12 @@ describe('contenido', () => {
     expect(hasType('solid', 'choose-fix')).toBe(true);
   });
 
+  it('todas las preguntas tienen pista', () => {
+    for (const question of allQuestions) {
+      expect(question.hint, `${question.id} sin hint`).toBeTruthy();
+    }
+  });
+
   it('las etiquetas salen del contenido en orden canónico', () => {
     const gofTags = tagsForTopic('gof').map(({ tag }) => tag);
 

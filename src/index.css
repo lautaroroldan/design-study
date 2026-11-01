@@ -22,7 +22,7 @@
   Oscuro: misma jerarquía invertida, un solo tono (azul) y nada de sombras.
 */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   --canvas: #f6f4ee;
   --surface: #fffdf8;
@@ -60,43 +60,44 @@
   --code-punct: #5c6068;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #131418;
-    --surface: #1a1c21;
-    --inset: #101115;
-    --inset-strong: #23252b;
+/* El tema se aplica con la clase .dark en <html> (preferencia guardada o sistema). */
+:root.dark {
+  color-scheme: dark;
 
-    --ink: #e9e6df;
-    --ink-2: #b4b1aa;
-    --ink-3: #8d8a84;
+  --canvas: #131418;
+  --surface: #1a1c21;
+  --inset: #101115;
+  --inset-strong: #23252b;
 
-    --rule: rgb(233 230 223 / 0.12);
-    --rule-strong: rgb(233 230 223 / 0.2);
+  --ink: #e9e6df;
+  --ink-2: #b4b1aa;
+  --ink-3: #8d8a84;
 
-    --accent: #9cb9e6;
-    --accent-hover: #b9cdee;
-    --accent-soft: #1e2b3d;
+  --rule: rgb(233 230 223 / 0.12);
+  --rule-strong: rgb(233 230 223 / 0.2);
 
-    --mustard: #dcb163;
-    --mustard-soft: #322813;
+  --accent: #9cb9e6;
+  --accent-hover: #b9cdee;
+  --accent-soft: #1e2b3d;
 
-    --good: #86c3a2;
-    --good-soft: #17281f;
-    --bad: #e2908a;
-    --bad-soft: #2b1a19;
+  --mustard: #dcb163;
+  --mustard-soft: #322813;
 
-    --code-bg: #101115;
-    --code-grid: rgb(233 230 223 / 0.05);
-    --code-ink: #ded9d0;
-    --code-comment: #7f7d75;
-    --code-keyword: #9cb9e6;
-    --code-string: #8fc9a8;
-    --code-number: #ddb163;
-    --code-type: #d99d84;
-    --code-fn: #a9c2ee;
-    --code-punct: #a8a5a0;
-  }
+  --good: #86c3a2;
+  --good-soft: #17281f;
+  --bad: #e2908a;
+  --bad-soft: #2b1a19;
+
+  --code-bg: #101115;
+  --code-grid: rgb(233 230 223 / 0.05);
+  --code-ink: #ded9d0;
+  --code-comment: #7f7d75;
+  --code-keyword: #9cb9e6;
+  --code-string: #8fc9a8;
+  --code-number: #ddb163;
+  --code-type: #d99d84;
+  --code-fn: #a9c2ee;
+  --code-punct: #a8a5a0;
 }
 
 @theme inline {
